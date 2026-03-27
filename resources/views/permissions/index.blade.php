@@ -40,7 +40,8 @@
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $permission->name }}</td>
                                 <td>
-                                    <form action="{{ route('permissions.destroy', $permission) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus permission ini?')">
+                                    <form action="{{ route('permissions.destroy', $permission) }}" method="POST" class="d-inline"
+                                        data-confirm="Hapus permission '{{ $permission->name }}'?" data-confirm-ok="Hapus" data-confirm-title="Hapus Permission">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Hapus</button>
                                     </form>

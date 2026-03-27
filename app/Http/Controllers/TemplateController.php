@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Template;
 use App\Models\TemplateField;
+use App\Support\TemplateFieldPreset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -17,27 +18,41 @@ class TemplateController extends Controller
 
     public function create()
     {
-        return view('templates.create');
+        $presets = TemplateFieldPreset::all();
+        return view('templates.create', compact('presets'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'       => 'required|string|max:100',
-            'blade_view' => 'required|string|max:100',
-            'thumbnail'  => 'nullable|image|max:2048',
+            'name'         => 'required|string|max:100',
+            'asset_folder' => 'required|string|max:100|alpha_dash',
+            'blade_view'   => 'required|string|max:100',
+            'thumbnail'    => 'nullable|image|max:2048',
+            'field_preset' => 'nullable|string',
         ]);
 
-        $data = $request->only('name', 'description', 'blade_view', 'is_active');
-        $data['slug']      = Str::slug($request->name);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url');
+        $data['slug']             = Str::slug($request->name);
+        $data['is_active']        = $request->boolean('is_active', true);
+        $data['free_photo_limit'] = $request->filled('free_photo_limit') ? (int) $request->free_photo_limit : null;
+        $data['extra_photo_price']= (int) ($request->extra_photo_price ?? 5000);
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('templates', 'public');
         }
 
-        Template::create($data);
-        return redirect()->route('templates.index')->with('success', 'Template berhasil dibuat.');
+        $template = Template::create($data);
+
+        // Load default fields dari preset yang dipilih
+        if ($request->field_preset && $request->field_preset !== 'empty') {
+            foreach (TemplateFieldPreset::get($request->field_preset) as $field) {
+                $template->fields()->create(array_merge($field, ['template_id' => $template->id]));
+            }
+        }
+
+        return redirect()->route('templates.edit', $template)
+            ->with('success', 'Template berhasil dibuat.' . ($request->field_preset !== 'empty' ? ' Default fields sudah dimuat.' : ''));
     }
 
     public function show(Template $template)
@@ -49,27 +64,31 @@ class TemplateController extends Controller
     public function edit(Template $template)
     {
         $template->load(['fields' => fn($q) => $q->orderBy('order')]);
-        return view('templates.edit', compact('template'));
+        $presets = TemplateFieldPreset::all();
+        return view('templates.edit', compact('template', 'presets'));
     }
 
     public function update(Request $request, Template $template)
     {
         $request->validate([
-            'name'       => 'required|string|max:100',
-            'blade_view' => 'required|string|max:100',
-            'thumbnail'  => 'nullable|image|max:2048',
+            'name'         => 'required|string|max:100',
+            'asset_folder' => 'required|string|max:100|alpha_dash',
+            'blade_view'   => 'required|string|max:100',
+            'thumbnail'    => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name', 'description', 'blade_view');
-        $data['slug']      = Str::slug($request->name);
-        $data['is_active'] = $request->boolean('is_active');
+        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url');
+        $data['slug']             = Str::slug($request->name);
+        $data['is_active']        = $request->boolean('is_active');
+        $data['free_photo_limit'] = $request->filled('free_photo_limit') ? (int) $request->free_photo_limit : null;
+        $data['extra_photo_price']= (int) ($request->extra_photo_price ?? 5000);
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('templates', 'public');
         }
 
         $template->update($data);
-        return redirect()->route('templates.index')->with('success', 'Template berhasil diupdate.');
+        return redirect()->route('templates.edit', $template)->with('success', 'Template berhasil diupdate.');
     }
 
     public function destroy(Template $template)
@@ -78,7 +97,39 @@ class TemplateController extends Controller
         return redirect()->route('templates.index')->with('success', 'Template berhasil dihapus.');
     }
 
-    // --- Field Management ---
+    public function toggle(Template $template)
+    {
+        $template->update(['is_active' => !$template->is_active]);
+        $status = $template->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('success', "Template '{$template->name}' berhasil {$status}.");
+    }
+
+    /**
+     * Load preset fields ke template yang sudah ada.
+     * Field yang sudah ada (key sama) tidak akan ditimpa.
+     */
+    public function loadPreset(Request $request, Template $template)
+    {
+        $request->validate(['preset' => 'required|string']);
+
+        $fields = TemplateFieldPreset::get($request->preset);
+
+        if (empty($fields)) {
+            return back()->with('error', 'Preset tidak ditemukan.');
+        }
+
+        $added = 0;
+        foreach ($fields as $field) {
+            if (!$template->fields()->where('key', $field['key'])->exists()) {
+                $template->fields()->create(array_merge($field, ['template_id' => $template->id]));
+                $added++;
+            }
+        }
+
+        return back()->with('success', "{$added} field berhasil dimuat dari preset.");
+    }
+
+    // ── Field Management ──────────────────────────────────────────────
 
     public function storeField(Request $request, Template $template)
     {

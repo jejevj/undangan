@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Template;
 use App\Models\Invitation;
 use App\Models\InvitationData;
+use App\Models\Music;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -25,6 +26,14 @@ class InvitationController extends Controller
      */
     public function selectTemplate()
     {
+        // Cek limit undangan berdasarkan plan
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->canCreateInvitation()) {
+            $plan = $user->activePlan();
+            return redirect()->route('subscription.index')
+                ->with('error', "Batas undangan paket {$plan->name} ({$plan->max_invitations} undangan) sudah tercapai. Upgrade paket untuk membuat lebih banyak undangan.");
+        }
+
         $templates = Template::where('is_active', true)->get();
         return view('invitations.select-template', compact('templates'));
     }
@@ -36,10 +45,11 @@ class InvitationController extends Controller
     {
         $request->validate(['template_id' => 'required|exists:templates,id']);
 
-        $template = Template::with(['fields' => fn($q) => $q->orderBy('order')])->findOrFail($request->template_id);
+        $template      = Template::with(['fields' => fn($q) => $q->orderBy('order')])->findOrFail($request->template_id);
         $fieldsByGroup = $template->fields->groupBy('group');
+        $accessibleMusic = Music::accessibleByUser(auth()->user());
 
-        return view('invitations.create', compact('template', 'fieldsByGroup'));
+        return view('invitations.create', compact('template', 'fieldsByGroup', 'accessibleMusic'));
     }
 
     public function store(Request $request)
@@ -64,6 +74,7 @@ class InvitationController extends Controller
             'template_id' => $template->id,
             'slug'        => Str::uuid(),
             'title'       => $request->title,
+            'greeting'    => $request->greeting,
             'status'      => 'draft',
         ]);
 
@@ -78,15 +89,15 @@ class InvitationController extends Controller
     {
         $this->authorizeInvitation($invitation);
 
-        $template = $invitation->template()->with(['fields' => fn($q) => $q->orderBy('order')])->first();
+        $template      = $invitation->template()->with(['fields' => fn($q) => $q->orderBy('order')])->first();
         $fieldsByGroup = $template->fields->groupBy('group');
+        $accessibleMusic = Music::accessibleByUser(auth()->user());
 
-        // Map existing data: key => value
         $existingData = $invitation->data->mapWithKeys(fn($d) => [
             $d->templateField->key => $d->value
         ])->toArray();
 
-        return view('invitations.edit', compact('invitation', 'template', 'fieldsByGroup', 'existingData'));
+        return view('invitations.edit', compact('invitation', 'template', 'fieldsByGroup', 'existingData', 'accessibleMusic'));
     }
 
     public function update(Request $request, Invitation $invitation)
@@ -103,7 +114,7 @@ class InvitationController extends Controller
         }
         if ($rules) $request->validate($rules);
 
-        $invitation->update(['title' => $request->title]);
+        $invitation->update(['title' => $request->title, 'greeting' => $request->greeting, 'gallery_display' => $request->gallery_display ?? 'grid']);
 
         $this->saveInvitationData($invitation, $template, $request->input('fields', []));
 
@@ -117,25 +128,48 @@ class InvitationController extends Controller
     {
         $this->authorizeInvitation($invitation);
 
-        $invitation->load(['data.templateField', 'template']);
-        $data = $invitation->getDataMap();
+        $invitation->load(['data.templateField', 'template', 'gallery', 'bankAccounts']);
+        $data    = $invitation->getDataMap();
+        $gallery = $invitation->gallery;
 
-        return view($invitation->template->blade_view, compact('invitation', 'data'));
+        return view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery'));
     }
 
     /**
      * Halaman publik undangan (tanpa auth)
+     * - Tanpa ?to=slug  → cover generik tanpa nama tamu
+     * - Dengan ?to=slug → cover dengan nama tamu
+     * - Dengan ?open=1  → langsung ke detail undangan
      */
-    public function show(string $slug)
+    public function show(Request $request, string $slug)
     {
         $invitation = Invitation::where('slug', $slug)
             ->where('status', 'published')
             ->firstOrFail();
 
-        $invitation->load(['data.templateField', 'template']);
-        $data = $invitation->getDataMap();
+        $invitation->load(['data.templateField', 'template', 'gallery', 'bankAccounts']);
+        $data    = $invitation->getDataMap();
+        $gallery = $invitation->gallery;
 
-        return view($invitation->template->blade_view, compact('invitation', 'data'));
+        if ($request->boolean('open')) {
+            return view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery'));
+        }
+
+        // Resolve nama tamu dari ?to=slug
+        $guestName = null;
+        $toSlug    = $request->query('to');
+
+        if ($toSlug) {
+            $guest     = $invitation->guests()->where('slug', $toSlug)->first();
+            $guestName = $guest?->name;
+        }
+
+        // URL tombol "Buka Undangan" — pertahankan ?to agar terbawa
+        $invitationUrl = route('invitation.show', $slug)
+            . '?open=1'
+            . ($toSlug ? '&to=' . urlencode($toSlug) : '');
+
+        return view('invitation-templates.cover', compact('invitation', 'data', 'guestName', 'invitationUrl'));
     }
 
     public function publish(Invitation $invitation)

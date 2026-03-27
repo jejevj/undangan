@@ -5,10 +5,21 @@
     <li class="breadcrumb-item active">Undangan Saya</li>
 @endsection
 @section('content')
-<div class="mb-3">
+<div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
     <a href="{{ route('invitations.select-template') }}" class="btn btn-primary">
         <i class="fa fa-plus"></i> Buat Undangan Baru
     </a>
+    @php $user = auth()->user(); @endphp
+    @if(!$user->isAdmin())
+    @php $plan = $user->activePlan(); $remaining = $user->remainingInvitations(); @endphp
+    <span class="badge badge-{{ $plan->badge_color }} ms-1">{{ $plan->name }}</span>
+    <span class="text-muted small">
+        {{ $user->invitationCount() }} / {{ $plan->max_invitations }} undangan
+        @if($remaining <= 0)
+            &nbsp;·&nbsp; <a href="{{ route('subscription.index') }}" class="text-warning">Upgrade untuk lebih banyak</a>
+        @endif
+    </span>
+    @endif
 </div>
 <div class="row">
     @forelse($invitations as $inv)
@@ -32,7 +43,7 @@
                 <a href="{{ route('invitations.edit', $inv) }}" class="btn btn-warning btn-xs">
                     <i class="fa fa-pencil"></i> Edit
                 </a>
-                <a href="{{ route('invitations.preview', $inv) }}" class="btn btn-info btn-xs" target="_blank">
+                <a href="{{ route('invitations.preview', $inv) }}" class="btn btn-info btn-xs" target="_blank" rel="noopener">
                     <i class="fa fa-eye"></i> Preview
                 </a>
                 @if($inv->status !== 'published')
@@ -46,7 +57,8 @@
                         <button class="btn btn-secondary btn-xs">Unpublish</button>
                     </form>
                 @endif
-                <form action="{{ route('invitations.destroy', $inv) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus undangan ini?')">
+                <form action="{{ route('invitations.destroy', $inv) }}" method="POST" class="d-inline"
+                    data-confirm="Hapus undangan '{{ $inv->title }}'? Semua data tamu akan ikut terhapus." data-confirm-ok="Hapus" data-confirm-title="Hapus Undangan">
                     @csrf @method('DELETE')
                     <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>
                 </form>

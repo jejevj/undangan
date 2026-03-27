@@ -42,7 +42,8 @@
                                     <a href="{{ route('roles.edit', $role) }}" class="btn btn-warning btn-xs me-1">
                                         <i class="fa fa-pencil"></i> Edit
                                     </a>
-                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus role ini?')">
+                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline"
+                                        data-confirm="Hapus role '{{ $role->name }}'?" data-confirm-ok="Hapus" data-confirm-title="Hapus Role">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Hapus</button>
                                     </form>

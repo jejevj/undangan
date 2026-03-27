@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Invitation extends Model
 {
     protected $fillable = [
-        'user_id', 'template_id', 'slug', 'title', 'status', 'published_at', 'expired_at'
+        'user_id', 'template_id', 'slug', 'title', 'greeting',
+        'status', 'gallery_display', 'gift_enabled', 'published_at', 'expired_at'
     ];
 
     protected $casts = [
@@ -30,6 +31,88 @@ class Invitation extends Model
     public function data(): HasMany
     {
         return $this->hasMany(InvitationData::class);
+    }
+
+    public function guests(): HasMany
+    {
+        return $this->hasMany(Guest::class)->orderBy('name');
+    }
+
+    public function gallery(): HasMany
+    {
+        return $this->hasMany(InvitationGallery::class, 'invitation_id')->orderBy('order');
+    }
+
+    public function galleryOrders(): HasMany
+    {
+        return $this->hasMany(GalleryOrder::class);
+    }
+
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(InvitationBankAccount::class)->orderBy('order');
+    }
+
+    public function featureOrders(): HasMany
+    {
+        return $this->hasMany(InvitationFeatureOrder::class);
+    }
+
+    /** Apakah gift section bisa ditampilkan */
+    public function isGiftActive(): bool
+    {
+        // Premium: selalu aktif
+        if ($this->template->isPremium()) return true;
+        // Free: cek flag gift_enabled
+        return (bool) $this->gift_enabled;
+    }
+    /**
+     * Total slot foto yang sudah dibayar (dari gallery orders)
+     */
+    public function paidPhotoSlots(): int
+    {
+        return $this->galleryOrders()
+            ->where('status', 'paid')
+            ->sum('qty');
+    }
+
+    /**
+     * Total slot foto yang tersedia (gratis + yang sudah dibeli)
+     */
+    public function totalPhotoSlots(): int|null
+    {
+        $limit = $this->template->free_photo_limit ?? null;
+        if ($limit === null) return null; // unlimited
+
+        return $limit + $this->paidPhotoSlots();
+    }
+
+    /**
+     * Sisa slot foto yang bisa diupload
+     */
+    public function remainingPhotoSlots(): int|null
+    {
+        $total = $this->totalPhotoSlots();
+        if ($total === null) return null; // unlimited
+
+        $used = $this->gallery()->count();
+        return max(0, $total - $used);
+    }
+
+    /**
+     * Render pesan pengantar dengan mengganti placeholder:
+     * {nama_tamu} → nama tamu
+     * {link}      → URL undangan dengan ?to=slug_tamu
+     */
+    public function renderGreeting(Guest $guest): string
+    {
+        $url  = route('invitation.show', $this->slug) . '?to=' . urlencode($guest->slug);
+        $text = $this->greeting ?? '';
+
+        $text = str_replace('{nama_tamu}', $guest->name, $text);
+        $text = str_replace('{link}', $url, $text);
+
+        return $text;
     }
 
     /**

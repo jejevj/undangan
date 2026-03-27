@@ -45,7 +45,8 @@
                                         <i class="fa fa-pencil"></i> Edit
                                     </a>
                                     @if($user->id !== auth()->id())
-                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus user ini?')">
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
+                                        data-confirm="Hapus user '{{ $user->name }}'? Tindakan ini tidak dapat dibatalkan." data-confirm-ok="Hapus" data-confirm-title="Hapus User">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Hapus</button>
                                     </form>

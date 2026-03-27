@@ -50,7 +50,8 @@
                                     <a href="{{ route('menus.edit', $menu) }}" class="btn btn-warning btn-xs me-1">
                                         <i class="fa fa-pencil"></i> Edit
                                     </a>
-                                    <form action="{{ route('menus.destroy', $menu) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus menu ini?')">
+                                    <form action="{{ route('menus.destroy', $menu) }}" method="POST" class="d-inline"
+                                        data-confirm="Hapus menu '{{ $menu->name }}'?" data-confirm-ok="Hapus" data-confirm-title="Hapus Menu">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Hapus</button>
                                     </form>
@@ -74,7 +75,8 @@
                                         <a href="{{ route('menus.edit', $child) }}" class="btn btn-warning btn-xs me-1">
                                             <i class="fa fa-pencil"></i> Edit
                                         </a>
-                                        <form action="{{ route('menus.destroy', $child) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus menu ini?')">
+                                        <form action="{{ route('menus.destroy', $child) }}" method="POST" class="d-inline"
+                                            data-confirm="Hapus menu '{{ $child->name }}'?" data-confirm-ok="Hapus" data-confirm-title="Hapus Menu">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Hapus</button>
                                         </form>

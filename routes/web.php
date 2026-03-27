@@ -10,6 +10,12 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\InvitationController;
 
+use App\Http\Controllers\GuestController;
+use App\Http\Controllers\MusicController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\GiftController;
+use App\Http\Controllers\SubscriptionController;
+
 // Auth
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
@@ -21,6 +27,11 @@ Route::get('/inv/{slug}', [InvitationController::class, 'show'])->name('invitati
 // Protected routes
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Subscription / Pricing
+    Route::get('subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::get('subscription/{plan}/checkout', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+    Route::post('subscription/{subscription}/pay', [SubscriptionController::class, 'simulatePay'])->name('subscription.pay');
 
     // Undangan
     Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
@@ -34,7 +45,42 @@ Route::middleware('auth')->group(function () {
     Route::post('invitations/{invitation}/publish', [InvitationController::class, 'publish'])->name('invitations.publish');
     Route::post('invitations/{invitation}/unpublish', [InvitationController::class, 'unpublish'])->name('invitations.unpublish');
 
-    // Template Management (admin only)
+    // Guest Management (nested under invitation)
+    Route::get('invitations/{invitation}/guests', [GuestController::class, 'index'])->name('invitations.guests.index');
+    Route::post('invitations/{invitation}/guests', [GuestController::class, 'store'])->name('invitations.guests.store');
+    Route::put('invitations/{invitation}/guests/{guest}', [GuestController::class, 'update'])->name('invitations.guests.update');
+    Route::delete('invitations/{invitation}/guests/{guest}', [GuestController::class, 'destroy'])->name('invitations.guests.destroy');
+    Route::get('invitations/{invitation}/guests/{guest}/greeting', [GuestController::class, 'greeting'])->name('invitations.guests.greeting');
+
+    // Gift / Bank Account Management
+    Route::get('invitations/{invitation}/gift', [GiftController::class, 'index'])->name('invitations.gift.index');
+    Route::post('invitations/{invitation}/gift', [GiftController::class, 'store'])->name('invitations.gift.store');
+    Route::put('invitations/{invitation}/gift/{account}', [GiftController::class, 'update'])->name('invitations.gift.update');
+    Route::delete('invitations/{invitation}/gift/{account}', [GiftController::class, 'destroy'])->name('invitations.gift.destroy');
+    Route::get('invitations/{invitation}/gift/buy', [GiftController::class, 'buyFeature'])->name('invitations.gift.buy');
+    Route::post('feature-orders/{order}/pay', [GiftController::class, 'simulatePay'])->name('gift.feature.pay');
+    Route::get('invitations/{invitation}/gallery', [GalleryController::class, 'index'])->name('invitations.gallery.index');
+    Route::post('invitations/{invitation}/gallery', [GalleryController::class, 'store'])->name('invitations.gallery.store');
+    Route::delete('invitations/{invitation}/gallery/{photo}', [GalleryController::class, 'destroy'])->name('invitations.gallery.destroy');
+    Route::get('invitations/{invitation}/gallery/buy-slots', [GalleryController::class, 'buySlots'])->name('invitations.gallery.buy-slots');
+    Route::post('invitations/{invitation}/gallery/buy-slots', [GalleryController::class, 'buySlots'])->name('invitations.gallery.buy-slots.post');
+    Route::post('gallery-orders/{order}/pay', [GalleryController::class, 'simulatePay'])->name('gallery.pay');
+
+    // Music Library (user)
+    Route::get('music', [MusicController::class, 'index'])->name('music.index')->middleware('can:view-music');
+    Route::get('music/{music}/buy', [MusicController::class, 'buy'])->name('music.buy')->middleware('can:view-music');
+    Route::post('music/orders/{order}/pay', [MusicController::class, 'simulatePay'])->name('music.pay')->middleware('can:view-music');
+    Route::get('music/upload', [MusicController::class, 'uploadForm'])->name('music.upload')->middleware('can:upload-music');
+    Route::post('music/upload', [MusicController::class, 'userUpload'])->name('music.upload.store')->middleware('can:upload-music');
+
+    // Music Admin
+    Route::middleware('can:manage-music')->group(function () {
+        Route::get('admin/music', [MusicController::class, 'adminIndex'])->name('music.admin.index');
+        Route::get('admin/music/create', [MusicController::class, 'adminCreate'])->name('music.admin.create');
+        Route::post('admin/music', [MusicController::class, 'adminStore'])->name('music.admin.store');
+        Route::delete('admin/music/{music}', [MusicController::class, 'adminDestroy'])->name('music.admin.destroy');
+        Route::patch('admin/music/{music}/toggle', [MusicController::class, 'adminToggle'])->name('music.admin.toggle');
+    });
     Route::resource('templates', TemplateController::class)->middleware([
         'index'   => 'can:view-templates',
         'create'  => 'can:create-templates',
@@ -45,6 +91,8 @@ Route::middleware('auth')->group(function () {
     ]);
     Route::post('templates/{template}/fields', [TemplateController::class, 'storeField'])->name('templates.fields.store')->middleware('can:edit-templates');
     Route::delete('templates/{template}/fields/{field}', [TemplateController::class, 'destroyField'])->name('templates.fields.destroy')->middleware('can:edit-templates');
+    Route::patch('templates/{template}/toggle', [TemplateController::class, 'toggle'])->name('templates.toggle')->middleware('can:edit-templates');
+    Route::post('templates/{template}/load-preset', [TemplateController::class, 'loadPreset'])->name('templates.load-preset')->middleware('can:edit-templates');
 
     // User Management
     Route::resource('users', UserController::class)->middleware([

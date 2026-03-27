@@ -85,6 +85,81 @@
     <script src="{{ asset('assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ asset('assets/js/custom.min.js') }}"></script>
     <script src="{{ asset('assets/js/deznav-init.js') }}"></script>
+
+    {{-- ── Global Confirm Modal ─────────────────────────────────────────── --}}
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div class="modal-icon text-center w-100 pt-2">
+                        <span id="confirmIcon" style="font-size:2.5rem">⚠️</span>
+                    </div>
+                </div>
+                <div class="modal-body text-center pt-1">
+                    <h5 id="confirmTitle" class="mb-1">Konfirmasi</h5>
+                    <p id="confirmMessage" class="text-muted mb-0"></p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center gap-2 pt-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn px-4" id="confirmOkBtn">Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /**
+     * Global modal confirm — menggantikan window.confirm()
+     *
+     * Penggunaan via HTML:
+     *   <form data-confirm="Hapus item ini?" data-confirm-title="Hapus?" data-confirm-ok="Hapus" data-confirm-type="danger">
+     *
+     * Penggunaan via JS:
+     *   modalConfirm({ message: '...', onConfirm: () => { ... } })
+     */
+    window.modalConfirm = function ({ message = 'Apakah Anda yakin?', title = 'Konfirmasi', okText = 'Ya, Lanjutkan', type = 'danger', icon = null, onConfirm }) {
+        const modal   = document.getElementById('confirmModal');
+        const bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+
+        document.getElementById('confirmTitle').textContent   = title;
+        document.getElementById('confirmMessage').textContent = message;
+
+        const okBtn = document.getElementById('confirmOkBtn');
+        okBtn.className = `btn px-4 btn-${type}`;
+        okBtn.textContent = okText;
+
+        const icons = { danger: '🗑️', warning: '⚠️', success: '✅', info: 'ℹ️' };
+        document.getElementById('confirmIcon').textContent = icon ?? icons[type] ?? '⚠️';
+
+        // Hapus listener lama
+        const newBtn = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newBtn, okBtn);
+
+        newBtn.addEventListener('click', () => {
+            bsModal.hide();
+            onConfirm();
+        });
+
+        bsModal.show();
+    };
+
+    // ── Intercept semua form dengan data-confirm ──────────────────────────
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!form.dataset.confirm) return;
+
+        e.preventDefault();
+
+        modalConfirm({
+            message : form.dataset.confirm,
+            title   : form.dataset.confirmTitle   ?? 'Konfirmasi',
+            okText  : form.dataset.confirmOk      ?? 'Ya, Lanjutkan',
+            type    : form.dataset.confirmType    ?? 'danger',
+            onConfirm: () => form.submit(),
+        });
+    });
+    </script>
+
     @stack('scripts')
 </body>
 </html>
