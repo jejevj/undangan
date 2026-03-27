@@ -48,6 +48,10 @@ class User extends Authenticatable
         return $this->hasMany(UserSubscription::class);
     }
 
+    public function invitations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Invitation::class);
+    }
     /** Subscription aktif saat ini */
     public function activeSubscription(): ?UserSubscription
     {
@@ -76,7 +80,7 @@ class User extends Authenticatable
     /** Jumlah undangan yang sudah dibuat */
     public function invitationCount(): int
     {
-        return $this->hasMany(Invitation::class)->count();
+        return $this->invitations()->count();
     }
 
     /** Apakah masih bisa buat undangan baru */

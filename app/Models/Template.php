@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Template extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'type', 'price', 'free_photo_limit', 'extra_photo_price',
+        'category_id', 'name', 'slug', 'type', 'price', 'free_photo_limit', 'extra_photo_price',
         'gift_feature_price', 'guest_limit', 'thumbnail', 'preview_url',
         'blade_view', 'asset_folder', 'version', 'description', 'is_active',
     ];
@@ -91,6 +92,11 @@ class Template extends Model
     }
 
     // ── Relations ─────────────────────────────────────────────────────────
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(TemplateCategory::class, 'category_id');
+    }
 
     public function fields(): HasMany
     {

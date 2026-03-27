@@ -13,15 +13,26 @@
 </p>
 
 <div class="d-flex gap-2 mb-4">
-    <a href="{{ route('music.upload') }}" class="btn btn-outline-primary btn-sm">
-        <i class="fa fa-upload"></i> Upload Lagu Saya
-    </a>
+    @php $activePlan = auth()->user()->activePlan(); @endphp
+    @if($activePlan->slug === 'free')
+        <a href="{{ route('music.upload') }}" class="btn btn-outline-primary btn-sm">
+            <i class="fa fa-upload"></i> Upload Lagu Saya (Rp 5.000)
+        </a>
+    @else
+        <div class="alert alert-info py-2 px-3 mb-0">
+            <i class="fa fa-info-circle"></i>
+            Paket <strong>{{ $activePlan->name }}</strong> sudah termasuk akses musik premium.
+        </div>
+    @endif
 </div>
 
 <div class="row">
-    @forelse($songs as $song)
-    @php $owned = $song->isFree() || in_array($song->id, $myIds); @endphp
-    <div class="col-xl-3 col-md-4 col-sm-6">
+    @forelse($allSongs as $song)
+    @php 
+        $owned = $song->isFree() || in_array($song->id, $myIds) || $song->uploaded_by === auth()->id();
+        $canUse = $owned; // Bisa digunakan di undangan
+    @endphp
+    <div class="col-xl-3 col-md-4 col-sm-6 mt-3">
         <div class="card h-100 {{ !$owned ? 'border-warning' : '' }}">
             <div class="card-body">
                 {{-- Cover / icon --}}
@@ -45,10 +56,13 @@
                 </audio>
 
                 {{-- Badge & harga --}}
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="badge badge-{{ $song->isFree() ? 'success' : 'warning' }}">
                         {{ $song->isFree() ? 'Gratis' : 'Premium' }}
                     </span>
+                    @if($song->isUserUpload() && $song->uploaded_by === auth()->id())
+                        <span class="badge badge-info">Upload Saya</span>
+                    @endif
                     @if(!$song->isFree())
                         <span class="small fw-bold">{{ $song->formattedPrice() }}</span>
                     @endif
@@ -59,7 +73,7 @@
             </div>
 
             <div class="card-footer">
-                @if($owned)
+                @if($canUse)
                     {{-- Sudah punya akses — tampilkan URL untuk disalin --}}
                     <div class="input-group input-group-sm">
                         <input type="text" class="form-control form-control-sm music-url-input"
@@ -73,12 +87,22 @@
                     </div>
                     <small class="text-success d-block mt-1">
                         <i class="fa fa-check"></i>
-                        {{ $song->isFree() ? 'Gratis — langsung gunakan' : 'Sudah dibeli' }}
+                        @if($song->isFree())
+                            Gratis — langsung gunakan
+                        @elseif($song->uploaded_by === auth()->id())
+                            Upload Saya
+                        @else
+                            Sudah dibeli
+                        @endif
                     </small>
                 @else
+                    {{-- Belum punya akses — tampilkan tombol beli --}}
                     <a href="{{ route('music.buy', $song) }}" class="btn btn-warning btn-sm w-100">
                         <i class="fa fa-shopping-cart"></i> Beli — {{ $song->formattedPrice() }}
                     </a>
+                    <small class="text-muted d-block mt-1 text-center">
+                        Beli untuk menggunakan di undangan
+                    </small>
                 @endif
             </div>
         </div>

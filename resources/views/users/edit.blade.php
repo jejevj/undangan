@@ -49,11 +49,20 @@
                             @endforeach
                         </div>
                     </div>
+
+                    @if(!$user->isAdmin())
+                    <div class="alert alert-light border mb-3">
+                        <small class="text-muted">Paket aktif:</small>
+                        <span class="badge badge-{{ $activePlan->badge_color }} ms-1">{{ $activePlan->name }}</span>
+                        <a href="{{ route('users.show', $user) }}" class="small ms-2">Kelola paket →</a>
+                    </div>
+                    @endif
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{{ route('users.show', $user) }}" class="btn btn-info">Detail</a>
                         <a href="{{ route('users.index') }}" class="btn btn-secondary">Batal</a>
-                    </div>
-                </form>
+                    </div>                </form>
             </div>
         </div>
     </div>

@@ -5,16 +5,57 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - {{ config('app.name') }}</title>
+    <title>@yield('title', 'Dashboard') - {{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}</title>
 
+    @php
+        $favicon = \App\Models\GeneralConfig::get('favicon');
+    @endphp
+    @if($favicon)
+    <link rel="icon" href="{{ asset('storage/' . $favicon) }}" type="image/x-icon">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $favicon) }}">
+    @else
     <link rel="icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/favicon.png') }}">
+    @endif
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/chartist/css/chartist.min.css') }}">
     <link href="{{ asset('assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/owl-carousel/owl.carousel.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Logo visibility control */
+        .nav-header .logo-abbr {
+            display: none !important;
+        }
+        
+        .nav-header .brand-title {
+            display: inline-block !important;
+            max-width: 120px;
+        }
+        
+        /* Show logo-abbr only when sidebar is collapsed/mini */
+        [data-sidebar-style="mini"] .nav-header .logo-abbr,
+        .menu-toggle .nav-header .logo-abbr {
+            display: block !important;
+        }
+        
+        /* Hide brand-title when sidebar is collapsed/mini */
+        [data-sidebar-style="mini"] .nav-header .brand-title,
+        .menu-toggle .nav-header .brand-title {
+            display: none !important;
+        }
+        
+        @media (max-width: 767px) {
+            .nav-header .brand-title {
+                display: none !important;
+            }
+            .nav-header .logo-abbr {
+                display: block !important;
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
@@ -30,11 +71,26 @@
     <div id="main-wrapper">
 
         {{-- Nav Header --}}
-        <div class="nav-header">
+        <div class="nav-header bg-primary">
             <a href="{{ route('dashboard') }}" class="brand-logo">
+                @php
+                    $logoIcon = \App\Models\GeneralConfig::get('logo_icon');
+                    $logoDark = \App\Models\GeneralConfig::get('logo_dark');
+                @endphp
+                
+                {{-- Logo Icon untuk sidebar collapsed --}}
+                @if($logoIcon)
+                <img class="logo-abbr" src="{{ asset('storage/' . $logoIcon) }}" alt="">
+                @else
                 <img class="logo-abbr" src="{{ asset('assets/images/logo.png') }}" alt="">
-                <img class="logo-compact" src="{{ asset('assets/images/logo-text.png') }}" alt="">
+                @endif
+                
+                {{-- Logo Full untuk sidebar expanded --}}
+                @if($logoDark)
+                <img class="brand-title" src="{{ asset('storage/' . $logoDark) }}" alt="">
+                @else
                 <img class="brand-title" src="{{ asset('assets/images/logo-text.png') }}" alt="">
+                @endif
             </a>
             <div class="nav-control">
                 <div class="hamburger">

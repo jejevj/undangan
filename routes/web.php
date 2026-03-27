@@ -8,13 +8,21 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\TemplateCategoryController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\LandingController;
 
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\MusicController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiftController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\PricingPlanController;
+use App\Http\Controllers\GeneralConfigController;
+
+// Landing Page
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/templates', [LandingController::class, 'getTemplates'])->name('landing.templates');
 
 // Auth
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
@@ -24,8 +32,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Halaman publik undangan (tanpa auth)
 Route::get('/inv/{slug}', [InvitationController::class, 'show'])->name('invitation.show');
 
-// Protected routes
-Route::middleware('auth')->group(function () {
+// Protected routes with /dash prefix
+Route::prefix('dash')->middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Subscription / Pricing
@@ -72,6 +80,8 @@ Route::middleware('auth')->group(function () {
     Route::post('music/orders/{order}/pay', [MusicController::class, 'simulatePay'])->name('music.pay')->middleware('can:view-music');
     Route::get('music/upload', [MusicController::class, 'uploadForm'])->name('music.upload')->middleware('can:upload-music');
     Route::post('music/upload', [MusicController::class, 'userUpload'])->name('music.upload.store')->middleware('can:upload-music');
+    Route::get('music/upload/{order}/checkout', [MusicController::class, 'uploadCheckout'])->name('music.upload.checkout')->middleware('can:upload-music');
+    Route::post('music/upload/{order}/pay', [MusicController::class, 'uploadPay'])->name('music.upload.pay')->middleware('can:upload-music');
 
     // Music Admin
     Route::middleware('can:manage-music')->group(function () {
@@ -89,7 +99,27 @@ Route::middleware('auth')->group(function () {
         'update'  => 'can:edit-templates',
         'destroy' => 'can:delete-templates',
     ]);
+    
+    // Template Categories
+    Route::resource('template-categories', TemplateCategoryController::class)->middleware([
+        'index'   => 'can:view-templates',
+        'create'  => 'can:create-templates',
+        'store'   => 'can:create-templates',
+        'edit'    => 'can:edit-templates',
+        'update'  => 'can:edit-templates',
+        'destroy' => 'can:delete-templates',
+    ]);
     Route::post('templates/{template}/fields', [TemplateController::class, 'storeField'])->name('templates.fields.store')->middleware('can:edit-templates');
+    
+    // Template Categories
+    Route::resource('template-categories', TemplateCategoryController::class)->middleware([
+        'index'   => 'can:view-templates',
+        'create'  => 'can:create-templates',
+        'store'   => 'can:create-templates',
+        'edit'    => 'can:edit-templates',
+        'update'  => 'can:edit-templates',
+        'destroy' => 'can:delete-templates',
+    ]);
     Route::delete('templates/{template}/fields/{field}', [TemplateController::class, 'destroyField'])->name('templates.fields.destroy')->middleware('can:edit-templates');
     Route::patch('templates/{template}/toggle', [TemplateController::class, 'toggle'])->name('templates.toggle')->middleware('can:edit-templates');
     Route::post('templates/{template}/load-preset', [TemplateController::class, 'loadPreset'])->name('templates.load-preset')->middleware('can:edit-templates');
@@ -99,10 +129,13 @@ Route::middleware('auth')->group(function () {
         'index'   => 'can:view-users',
         'create'  => 'can:create-users',
         'store'   => 'can:create-users',
+        'show'    => 'can:view-users',
         'edit'    => 'can:edit-users',
         'update'  => 'can:edit-users',
         'destroy' => 'can:delete-users',
     ]);
+    Route::post('users/{user}/assign-plan', [UserController::class, 'assignPlan'])->name('users.assign-plan')->middleware('can:edit-users');
+    Route::post('users/{user}/revoke-plan', [UserController::class, 'revokePlan'])->name('users.revoke-plan')->middleware('can:edit-users');
 
     // Role Management
     Route::resource('roles', RoleController::class)->middleware([
@@ -128,4 +161,25 @@ Route::middleware('auth')->group(function () {
         'update'  => 'can:edit-menus',
         'destroy' => 'can:delete-menus',
     ]);
+
+    // Pricing Plan Management
+    Route::resource('pricing-plans', PricingPlanController::class)->middleware([
+        'index'   => 'can:view-pricing-plans',
+        'create'  => 'can:create-pricing-plans',
+        'store'   => 'can:create-pricing-plans',
+        'edit'    => 'can:edit-pricing-plans',
+        'update'  => 'can:edit-pricing-plans',
+        'destroy' => 'can:delete-pricing-plans',
+    ]);
+    Route::patch('pricing-plans/{pricingPlan}/toggle', [PricingPlanController::class, 'toggle'])
+        ->name('pricing-plans.toggle')
+        ->middleware('can:edit-pricing-plans');
+
+    // General Config
+    Route::get('general-config', [GeneralConfigController::class, 'index'])
+        ->name('general-config.index')
+        ->middleware('can:view-general-config');
+    Route::put('general-config', [GeneralConfigController::class, 'update'])
+        ->name('general-config.update')
+        ->middleware('can:edit-general-config');
 });

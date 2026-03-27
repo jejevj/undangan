@@ -19,7 +19,7 @@ return new class extends Migration
             // Limits (null = unlimited)
             $table->unsignedTinyInteger('max_invitations')->default(1);
             $table->unsignedSmallInteger('max_gallery_photos')->nullable(); // total semua undangan
-            $table->unsignedTinyInteger('max_music_uploads')->default(0);   // 0 = tidak bisa upload
+            $table->unsignedTinyInteger('max_music_uploads')->nullable()->default(0);   // 0 = tidak bisa upload, null = unlimited
             $table->boolean('gift_section_included')->default(false);
             $table->boolean('can_delete_music')->default(true);
 

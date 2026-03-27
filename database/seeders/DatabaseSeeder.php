@@ -34,6 +34,10 @@ class DatabaseSeeder extends Seeder
             'view-music', 'upload-music',
             // Music (admin)
             'manage-music',
+            // Pricing Plans
+            'view-pricing-plans', 'create-pricing-plans', 'edit-pricing-plans', 'delete-pricing-plans',
+            // General Config
+            'view-general-config', 'edit-general-config',
         ];
 
         foreach ($permissions as $perm) {
@@ -51,6 +55,15 @@ class DatabaseSeeder extends Seeder
             'view-music', 'upload-music',
         ]);
 
+        // Role Pengguna (default untuk registrasi)
+        $userRole = Role::firstOrCreate(['name' => 'pengguna', 'guard_name' => 'web']);
+        $userRole->syncPermissions([
+            'view-dashboard',
+            'view-invitations', 'create-invitations', 'edit-invitations',
+            // Tidak ada 'delete-invitations' - pengguna biasa tidak bisa hapus undangan
+            'view-music', 'upload-music',
+        ]);
+
         // ── Admin user ────────────────────────────────────────────────
         $admin = User::firstOrCreate(
             ['email' => 'admin@undangan.test'],
@@ -64,27 +77,27 @@ class DatabaseSeeder extends Seeder
         // 1. Dashboard
         Menu::create([
             'name' => 'Dashboard', 'slug' => 'dashboard',
-            'url' => '/', 'icon' => 'flaticon-381-networking',
+            'url' => '/dash', 'icon' => 'flaticon-381-networking',
             'order' => 1, 'is_active' => true, 'permission_name' => 'view-dashboard',
         ]);
 
         // 2. Undangan Saya
         Menu::create([
             'name' => 'Undangan Saya', 'slug' => 'invitations',
-            'url' => '/invitations', 'icon' => 'flaticon-381-notepad',
+            'url' => '/dash/invitations', 'icon' => 'flaticon-381-notepad',
             'order' => 2, 'is_active' => true, 'permission_name' => 'view-invitations',
         ]);
 
         // 3. Musik (user: lihat galeri & upload)
         Menu::create([
             'name' => 'Musik', 'slug' => 'music',
-            'url' => '/music', 'icon' => 'flaticon-381-music-player-1',
+            'url' => '/dash/music', 'icon' => 'flaticon-381-music-album',
             'order' => 3, 'is_active' => true, 'permission_name' => 'view-music',
         ]);
 
         Menu::create([
             'name' => 'Paket Langganan', 'slug' => 'subscription',
-            'url' => '/subscription', 'icon' => 'flaticon-381-layer-1',
+            'url' => '/dash/subscription', 'icon' => 'flaticon-381-layer-1',
             'order' => 4, 'is_active' => true, 'permission_name' => 'view-invitations',
         ]);
 
@@ -97,12 +110,14 @@ class DatabaseSeeder extends Seeder
 
         // Sub-menu Pengaturan
         $subMenus = [
-            ['name' => 'Manajemen Template',  'slug' => 'templates',   'url' => '/templates',   'order' => 1, 'permission_name' => 'view-templates'],
-            ['name' => 'Manajemen Musik',     'slug' => 'admin-music', 'url' => '/admin/music', 'order' => 2, 'permission_name' => 'manage-music'],
-            ['name' => 'Manajemen User',      'slug' => 'users',       'url' => '/users',       'order' => 3, 'permission_name' => 'view-users'],
-            ['name' => 'Manajemen Role',      'slug' => 'roles',       'url' => '/roles',       'order' => 4, 'permission_name' => 'view-roles'],
-            ['name' => 'Manajemen Permission','slug' => 'permissions', 'url' => '/permissions', 'order' => 5, 'permission_name' => 'view-permissions'],
-            ['name' => 'Manajemen Menu',      'slug' => 'menus',       'url' => '/menus',       'order' => 6, 'permission_name' => 'view-menus'],
+            ['name' => 'Konfigurasi Umum',    'slug' => 'general-config', 'url' => '/dash/general-config', 'order' => 1, 'permission_name' => 'view-general-config'],
+            ['name' => 'Manajemen Template',  'slug' => 'templates',   'url' => '/dash/templates',   'order' => 2, 'permission_name' => 'view-templates'],
+            ['name' => 'Manajemen Musik',     'slug' => 'admin-music', 'url' => '/dash/admin/music', 'order' => 3, 'permission_name' => 'manage-music'],
+            ['name' => 'Manajemen Pricing',   'slug' => 'pricing-plans', 'url' => '/dash/pricing-plans', 'order' => 4, 'permission_name' => 'view-pricing-plans'],
+            ['name' => 'Manajemen User',      'slug' => 'users',       'url' => '/dash/users',       'order' => 5, 'permission_name' => 'view-users'],
+            ['name' => 'Manajemen Role',      'slug' => 'roles',       'url' => '/dash/roles',       'order' => 6, 'permission_name' => 'view-roles'],
+            ['name' => 'Manajemen Permission','slug' => 'permissions', 'url' => '/dash/permissions', 'order' => 7, 'permission_name' => 'view-permissions'],
+            ['name' => 'Manajemen Menu',      'slug' => 'menus',       'url' => '/dash/menus',       'order' => 8, 'permission_name' => 'view-menus'],
         ];
 
         foreach ($subMenus as $sub) {
@@ -138,9 +153,10 @@ class DatabaseSeeder extends Seeder
         }
 
         // ── Sub-seeders ───────────────────────────────────────────────
-        $this->call(InvitationSeeder::class);
-        $this->call(MusicSeeder::class);
+        $this->call(TemplateCategorySeeder::class);
         $this->call(BasicTemplateSeeder::class);
         $this->call(PricingPlanSeeder::class);
+        $this->call(MusicSeeder::class);
+        $this->call(InvitationSeeder::class);
     }
 }

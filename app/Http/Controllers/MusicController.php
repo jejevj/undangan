@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Music;
 use App\Models\MusicOrder;
+use App\Models\MusicUploadOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,29 +12,73 @@ class MusicController extends Controller
 {
     /**
      * Galeri lagu — user pilih lagu untuk undangan
+     * Hanya tampilkan:
+     * 1. Lagu gratis (sistem)
+     * 2. Lagu premium yang sudah dibeli
+     * 3. Lagu yang diupload sendiri
+     * 
+     * UPDATE: Tampilkan juga musik premium yang belum dibeli (dengan opsi beli)
      */
     public function index()
     {
-        $songs  = Music::where('is_active', true)->orderBy('type')->orderBy('title')->get();
-        $myIds  = auth()->user()->musicLibrary()->pluck('music_id')->toArray();
+        $user = auth()->user();
+        
+        // Ambil semua musik aktif
+        $allSongs = Music::where('is_active', true)
+            ->orderByRaw("CASE WHEN uploaded_by = {$user->id} THEN 0 ELSE 1 END")
+            ->orderBy('type')
+            ->orderBy('title')
+            ->get();
+        
+        // ID musik yang sudah dimiliki user
+        $myIds = $user->musicLibrary()->pluck('music_id')->toArray();
+        
+        // Filter: musik yang bisa diakses (untuk dropdown form)
+        $accessibleSongs = $allSongs->filter(function($song) use ($user, $myIds) {
+            return $song->isFree() 
+                || in_array($song->id, $myIds) 
+                || $song->uploaded_by === $user->id;
+        });
 
-        return view('music.index', compact('songs', 'myIds'));
+        return view('music.index', compact('allSongs', 'myIds', 'accessibleSongs'));
     }
 
     /**
-     * Form upload lagu oleh user (berbayar — cek payment nanti)
+     * Form upload lagu oleh user
+     * Menampilkan informasi biaya upload
+     * HANYA untuk user dengan paket FREE
      */
     public function uploadForm()
     {
-        return view('music.upload');
+        $user = auth()->user();
+        $activePlan = $user->activePlan();
+        
+        // Cek apakah user paket free
+        if ($activePlan->slug !== 'free') {
+            return redirect()->route('music.index')
+                ->with('error', 'Fitur upload musik hanya tersedia untuk paket Free. Paket ' . $activePlan->name . ' sudah termasuk akses musik premium.');
+        }
+        
+        $uploadFee = 5000; // Rp 5.000 per upload
+        return view('music.upload', compact('uploadFee'));
     }
 
     /**
      * Proses upload lagu oleh user
-     * Untuk saat ini: gratis, nanti akan dicek payment
+     * Step 1: Upload file temporary dan buat order pending
+     * HANYA untuk user dengan paket FREE
      */
     public function userUpload(Request $request)
     {
+        $user = auth()->user();
+        $activePlan = $user->activePlan();
+        
+        // Cek apakah user paket free
+        if ($activePlan->slug !== 'free') {
+            return redirect()->route('music.index')
+                ->with('error', 'Fitur upload musik hanya tersedia untuk paket Free.');
+        }
+        
         $request->validate([
             'title'  => 'required|string|max:100',
             'artist' => 'nullable|string|max:100',
@@ -41,23 +86,85 @@ class MusicController extends Controller
         ]);
 
         $file     = $request->file('file');
-        $filename = \Illuminate\Support\Str::slug($request->title) . '-' . auth()->id() . '-' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = \Illuminate\Support\Str::slug($request->title) . '-temp-' . auth()->id() . '-' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Simpan ke storage/app/public/music-uploads/ (bukan public langsung)
-        $path = $file->storeAs('music-uploads', $filename, 'public');
+        // Simpan ke temporary folder
+        $tempPath = $file->storeAs('music-uploads-temp', $filename, 'public');
 
+        // Buat order pending
+        $order = MusicUploadOrder::create([
+            'user_id'        => auth()->id(),
+            'order_number'   => MusicUploadOrder::generateOrderNumber(),
+            'amount'         => 5000,
+            'status'         => 'pending',
+            'temp_title'     => $request->title,
+            'temp_artist'    => $request->artist,
+            'temp_file_path' => $tempPath,
+        ]);
+
+        return redirect()->route('music.upload.checkout', $order)
+            ->with('info', 'Silakan lakukan pembayaran untuk menyelesaikan upload.');
+    }
+
+    /**
+     * Halaman checkout untuk upload musik
+     */
+    public function uploadCheckout(MusicUploadOrder $order)
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+
+        if ($order->isPaid()) {
+            return redirect()->route('music.index')
+                ->with('info', 'Upload sudah selesai.');
+        }
+
+        return view('music.upload-checkout', compact('order'));
+    }
+
+    /**
+     * Simulasi pembayaran upload musik
+     * Setelah paid: pindahkan file dari temp ke permanent dan buat record Music
+     */
+    public function uploadPay(MusicUploadOrder $order)
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+        abort_if($order->isPaid(), 400, 'Order sudah dibayar.');
+
+        // Update order status
+        $order->update([
+            'status'         => 'paid',
+            'paid_at'        => now(),
+            'payment_method' => 'simulation',
+        ]);
+
+        // Pindahkan file dari temp ke permanent
+        $tempPath = $order->temp_file_path;
+        $filename = basename($tempPath);
+        $newFilename = str_replace('-temp-', '-', $filename);
+        $permanentPath = 'music-uploads/' . $newFilename;
+
+        // Copy file
+        Storage::disk('public')->copy($tempPath, $permanentPath);
+
+        // Buat record Music
         $music = Music::create([
-            'title'       => $request->title,
-            'artist'      => $request->artist,
-            'file_path'   => $path,
-            'type'        => 'free',   // upload user = akses sendiri, tidak dijual
+            'title'       => $order->temp_title,
+            'artist'      => $order->temp_artist,
+            'file_path'   => $permanentPath,
+            'type'        => 'free',
             'price'       => 0,
             'is_active'   => true,
             'uploaded_by' => auth()->id(),
         ]);
 
+        // Update order dengan music_id
+        $order->update(['music_id' => $music->id]);
+
+        // Hapus file temporary
+        Storage::disk('public')->delete($tempPath);
+
         return redirect()->route('music.index')
-            ->with('success', "Lagu \"{$music->title}\" berhasil diupload dan siap digunakan.");
+            ->with('success', "Pembayaran berhasil! Lagu \"{$music->title}\" sudah tersedia di library Anda.");
     }
     /**
      * Halaman konfirmasi beli lagu premium (simulasi)

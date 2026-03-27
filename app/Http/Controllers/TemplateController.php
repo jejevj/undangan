@@ -30,13 +30,16 @@ class TemplateController extends Controller
             'blade_view'   => 'required|string|max:100',
             'thumbnail'    => 'nullable|image|max:2048',
             'field_preset' => 'nullable|string',
+            'category_id'  => 'nullable|exists:template_categories,id',
         ]);
 
-        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url');
+        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url', 'category_id');
         $data['slug']             = Str::slug($request->name);
         $data['is_active']        = $request->boolean('is_active', true);
         $data['free_photo_limit'] = $request->filled('free_photo_limit') ? (int) $request->free_photo_limit : null;
         $data['extra_photo_price']= (int) ($request->extra_photo_price ?? 5000);
+        $data['gift_feature_price'] = (int) ($request->gift_feature_price ?? 10000);
+        $data['guest_limit']      = $request->filled('guest_limit') ? (int) $request->guest_limit : null;
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('templates', 'public');
@@ -75,13 +78,16 @@ class TemplateController extends Controller
             'asset_folder' => 'required|string|max:100|alpha_dash',
             'blade_view'   => 'required|string|max:100',
             'thumbnail'    => 'nullable|image|max:2048',
+            'category_id'  => 'nullable|exists:template_categories,id',
         ]);
 
-        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url');
+        $data = $request->only('name', 'description', 'blade_view', 'type', 'price', 'asset_folder', 'version', 'preview_url', 'category_id');
         $data['slug']             = Str::slug($request->name);
         $data['is_active']        = $request->boolean('is_active');
         $data['free_photo_limit'] = $request->filled('free_photo_limit') ? (int) $request->free_photo_limit : null;
         $data['extra_photo_price']= (int) ($request->extra_photo_price ?? 5000);
+        $data['gift_feature_price'] = (int) ($request->gift_feature_price ?? 10000);
+        $data['guest_limit']      = $request->filled('guest_limit') ? (int) $request->guest_limit : null;
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('templates', 'public');

@@ -195,6 +195,12 @@ class InvitationController extends Controller
     public function destroy(Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
+        
+        // Cek permission delete-invitations
+        if (!auth()->user()->can('delete-invitations')) {
+            abort(403, 'Anda tidak memiliki izin untuk menghapus undangan.');
+        }
+        
         $invitation->delete();
         return redirect()->route('invitations.index')->with('success', 'Undangan berhasil dihapus.');
     }

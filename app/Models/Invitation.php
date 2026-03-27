@@ -10,7 +10,12 @@ class Invitation extends Model
 {
     protected $fillable = [
         'user_id', 'template_id', 'slug', 'title', 'greeting',
-        'status', 'gallery_display', 'gift_enabled', 'published_at', 'expired_at'
+        'status', 'gallery_display', 'gift_enabled', 'published_at', 'expired_at', 'is_preview',
+        // Preview invitation fields
+        'event_date', 'event_time', 'event_location', 'event_address',
+        'groom_name', 'groom_father', 'groom_mother',
+        'bride_name', 'bride_father', 'bride_mother',
+        'opening_text', 'closing_text', 'is_published'
     ];
 
     protected $casts = [

@@ -44,12 +44,26 @@
                 <form action="{{ route('templates.update', $template) }}" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
 
-                    {{-- Nama --}}
-                    <div class="form-group mb-3">
-                        <label>Nama Template <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                            value="{{ old('name', $template->name) }}" required>
-                        @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    {{-- Nama & Kategori --}}
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3">
+                            <label>Nama Template <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                                value="{{ old('name', $template->name) }}" required>
+                            @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6 form-group mb-3">
+                            <label>Kategori Template</label>
+                            <select name="category_id" class="form-control @error('category_id') is-invalid @enderror">
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach(\App\Models\TemplateCategory::where('is_active', true)->where('slug', '!=', 'all')->orderBy('order')->get() as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('category_id', $template->category_id) == $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
                     </div>
 
                     {{-- Tipe & Harga --}}

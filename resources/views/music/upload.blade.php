@@ -20,6 +20,13 @@
                     Format: <strong>MP3, OGG, WAV</strong> — maks <strong>15MB</strong>.
                 </div>
 
+                <div class="alert alert-warning mb-4">
+                    <i class="fa fa-money"></i>
+                    <strong>Biaya Upload: Rp {{ number_format($uploadFee, 0, ',', '.') }}</strong> per lagu.
+                    <br>
+                    <small>Pembayaran akan dilakukan setelah Anda mengisi form ini.</small>
+                </div>
+
                 <form action="{{ route('music.upload.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
@@ -48,7 +55,7 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-upload"></i> Upload
+                            <i class="fa fa-arrow-right"></i> Lanjut ke Pembayaran
                         </button>
                         <a href="{{ route('music.index') }}" class="btn btn-secondary">Batal</a>
                     </div>

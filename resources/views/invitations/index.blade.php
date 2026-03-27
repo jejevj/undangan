@@ -57,11 +57,13 @@
                         <button class="btn btn-secondary btn-xs">Unpublish</button>
                     </form>
                 @endif
+                @can('delete-invitations')
                 <form action="{{ route('invitations.destroy', $inv) }}" method="POST" class="d-inline"
                     data-confirm="Hapus undangan '{{ $inv->title }}'? Semua data tamu akan ikut terhapus." data-confirm-ok="Hapus" data-confirm-title="Hapus Undangan">
                     @csrf @method('DELETE')
                     <button class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>
