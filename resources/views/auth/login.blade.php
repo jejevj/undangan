@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     @php
         $siteName = \App\Models\GeneralConfig::get('site_name', config('app.name'));
     @endphp
@@ -272,8 +274,10 @@
                     this.classList.add('active');
                     document.getElementById(targetTab + '-tab').classList.add('active');
                     
-                    // Update URL without reload
-                    const newUrl = targetTab === 'login' ? '{{ route("login") }}' : '{{ route("register") }}';
+                    // Update URL without reload - use current protocol
+                    const loginUrl = '{{ route("login") }}'.replace(/^http:/, window.location.protocol);
+                    const registerUrl = '{{ route("register") }}'.replace(/^http:/, window.location.protocol);
+                    const newUrl = targetTab === 'login' ? loginUrl : registerUrl;
                     window.history.pushState({}, '', newUrl);
                 });
             });
