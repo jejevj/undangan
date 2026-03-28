@@ -3,70 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  @php
+  <?php
     $siteName = \App\Models\GeneralConfig::get('site_name') ?: config('app.name');
     $metaTitle = \App\Models\GeneralConfig::get('meta_title');
     $pageTitle = $metaTitle ?: $siteName . ' - Undangan Digital';
-  @endphp
-  <title>{{ $pageTitle }}</title>
-  <meta name="description" content="{{ \App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap dengan template elegan, fitur musik, galeri foto, dan amplop digital') }}">
-  <meta name="keywords" content="{{ \App\Models\GeneralConfig::get('meta_keywords', 'undangan digital, undangan online, wedding invitation, undangan pernikahan') }}">
-  <meta name="author" content="{{ $siteName }}">
+  ?>
+  <title><?php echo e($pageTitle); ?></title>
+  <meta name="description" content="<?php echo e(\App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap dengan template elegan, fitur musik, galeri foto, dan amplop digital')); ?>">
+  <meta name="keywords" content="<?php echo e(\App\Models\GeneralConfig::get('meta_keywords', 'undangan digital, undangan online, wedding invitation, undangan pernikahan')); ?>">
+  <meta name="author" content="<?php echo e($siteName); ?>">
   
-  {{-- Canonical URL --}}
-  <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
   
-  {{-- Upgrade insecure requests to HTTPS (temporary fix for mixed content) --}}
+  <link rel="canonical" href="<?php echo e($canonicalUrl ?? url()->current()); ?>">
+  
+  
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   
-  @if(\App\Models\GeneralConfig::get('google_site_verification'))
-  <meta name="google-site-verification" content="{{ \App\Models\GeneralConfig::get('google_site_verification') }}">
-  @endif
+  <?php if(\App\Models\GeneralConfig::get('google_site_verification')): ?>
+  <meta name="google-site-verification" content="<?php echo e(\App\Models\GeneralConfig::get('google_site_verification')); ?>">
+  <?php endif; ?>
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="{{ url('/') }}">
-  <meta property="og:title" content="{{ $pageTitle }}">
-  <meta property="og:description" content="{{ \App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap') }}">
-  @if(\App\Models\GeneralConfig::get('og_image'))
-  <meta property="og:image" content="{{ asset('storage/' . \App\Models\GeneralConfig::get('og_image')) }}">
-  @endif
+  <meta property="og:url" content="<?php echo e(url('/')); ?>">
+  <meta property="og:title" content="<?php echo e($pageTitle); ?>">
+  <meta property="og:description" content="<?php echo e(\App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap')); ?>">
+  <?php if(\App\Models\GeneralConfig::get('og_image')): ?>
+  <meta property="og:image" content="<?php echo e(asset('storage/' . \App\Models\GeneralConfig::get('og_image'))); ?>">
+  <?php endif; ?>
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="{{ url('/') }}">
-  <meta property="twitter:title" content="{{ $pageTitle }}">
-  <meta property="twitter:description" content="{{ \App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap') }}">
-  @if(\App\Models\GeneralConfig::get('og_image'))
-  <meta property="twitter:image" content="{{ asset('storage/' . \App\Models\GeneralConfig::get('og_image')) }}">
-  @endif
+  <meta property="twitter:url" content="<?php echo e(url('/')); ?>">
+  <meta property="twitter:title" content="<?php echo e($pageTitle); ?>">
+  <meta property="twitter:description" content="<?php echo e(\App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap')); ?>">
+  <?php if(\App\Models\GeneralConfig::get('og_image')): ?>
+  <meta property="twitter:image" content="<?php echo e(asset('storage/' . \App\Models\GeneralConfig::get('og_image'))); ?>">
+  <?php endif; ?>
   
-  @if(\App\Models\GeneralConfig::get('favicon'))
-  <link rel="icon" href="{{ asset('storage/' . \App\Models\GeneralConfig::get('favicon')) }}">
-  @else
-  <link rel="icon" href="{{ asset('demos-assets/img/favicon.png') }}">
-  @endif
+  <?php if(\App\Models\GeneralConfig::get('favicon')): ?>
+  <link rel="icon" href="<?php echo e(asset('storage/' . \App\Models\GeneralConfig::get('favicon'))); ?>">
+  <?php else: ?>
+  <link rel="icon" href="<?php echo e(asset('demos-assets/img/favicon.png')); ?>">
+  <?php endif; ?>
   
   <!-- Google Analytics -->
-  @if(\App\Models\GeneralConfig::get('google_analytics_id'))
-  <script async src="https://www.googletagmanager.com/gtag/js?id={{ \App\Models\GeneralConfig::get('google_analytics_id') }}"></script>
+  <?php if(\App\Models\GeneralConfig::get('google_analytics_id')): ?>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e(\App\Models\GeneralConfig::get('google_analytics_id')); ?>"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', '{{ \App\Models\GeneralConfig::get('google_analytics_id') }}');
+    gtag('config', '<?php echo e(\App\Models\GeneralConfig::get('google_analytics_id')); ?>');
   </script>
-  @endif
+  <?php endif; ?>
   
   <!-- CSS -->
-   <link rel="stylesheet" type="text/css" href="{{ asset('demos-assets/css/bootstrap.min.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/owl.carousel.min.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/owl.theme.default.min.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/jquery.fancybox.min.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/fontawesome.min.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/style.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/responsive.css') }}">
-   <link rel="stylesheet" href="{{ asset('demos-assets/css/color.css') }}">
+   <link rel="stylesheet" type="text/css" href="<?php echo e(asset('demos-assets/css/bootstrap.min.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/owl.carousel.min.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/owl.theme.default.min.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/jquery.fancybox.min.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/fontawesome.min.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/style.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/responsive.css')); ?>">
+   <link rel="stylesheet" href="<?php echo e(asset('demos-assets/css/color.css')); ?>">
    <style>
      .theme-toggle {
        cursor: pointer;
@@ -497,8 +497,8 @@
      }
    </style>
    <!-- jquery -->
-   <script src="{{ asset('demos-assets/js/jquery-3.6.0.min.js') }}"></script>
-   <script src="{{ asset('demos-assets/js/preloader.js') }}"></script>
+   <script src="<?php echo e(asset('demos-assets/js/jquery-3.6.0.min.js')); ?>"></script>
+   <script src="<?php echo e(asset('demos-assets/js/preloader.js')); ?>"></script>
    <script>
      // Theme toggle functionality
      (function() {
@@ -585,23 +585,23 @@
     <div class="container">
       <div class="top-bar">
         <div class="logo">
-          @php
+          <?php
             $logoDark = \App\Models\GeneralConfig::get('logo_dark');
             $logoLight = \App\Models\GeneralConfig::get('logo_light');
-          @endphp
-          @if($logoDark)
-          <img alt="logo" src="{{ asset('storage/' . $logoDark) }}" class="logo-dark">
-          @else
-          <img alt="logo" src="{{ asset('demos-assets/img/logo.png') }}" class="logo-dark">
-          @endif
-          @if($logoLight)
-          <img alt="logo" src="{{ asset('storage/' . $logoLight) }}" class="logo-light" style="display: none;">
-          @else
-          <img alt="logo" src="{{ asset('demos-assets/img/logo.png') }}" class="logo-light" style="display: none;">
-          @endif
+          ?>
+          <?php if($logoDark): ?>
+          <img alt="logo" src="<?php echo e(asset('storage/' . $logoDark)); ?>" class="logo-dark">
+          <?php else: ?>
+          <img alt="logo" src="<?php echo e(asset('demos-assets/img/logo.png')); ?>" class="logo-dark">
+          <?php endif; ?>
+          <?php if($logoLight): ?>
+          <img alt="logo" src="<?php echo e(asset('storage/' . $logoLight)); ?>" class="logo-light" style="display: none;">
+          <?php else: ?>
+          <img alt="logo" src="<?php echo e(asset('demos-assets/img/logo.png')); ?>" class="logo-light" style="display: none;">
+          <?php endif; ?>
         </div>
         
-        {{-- Hamburger Menu Button for Mobile --}}
+        
         <button class="navbar-toggler" type="button">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -612,17 +612,17 @@
             <li><a href="#features" class="text-white">Fitur</a></li>
             <li><a href="#templates" class="text-white">Template</a></li>
             <li><a href="#pricing" class="text-white">Harga</a></li>
-            @auth
-                <li><a href="{{ route('dashboard') }}" class="text-white">Dashboard</a></li>
-            @else
-                <li><a href="{{ route('login') }}" class="text-white">Login</a></li>
-            @endauth
+            <?php if(auth()->guard()->check()): ?>
+                <li><a href="<?php echo e(route('dashboard')); ?>" class="text-white">Dashboard</a></li>
+            <?php else: ?>
+                <li><a href="<?php echo e(route('login')); ?>" class="text-white">Login</a></li>
+            <?php endif; ?>
             <li><a class="theme-toggle text-white" href="#"><i class="fa-solid fa-moon"></i></a></li>
           </ul>
         </nav>
-        <a class="text-white contact-link" href="mailto:{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}"><i>
+        <a class="text-white contact-link" href="mailto:<?php echo e(\App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com')); ?>"><i>
             <svg height="112" viewBox="0 0 24 24" width="112" xmlns="http://www.w3.org/2000/svg"><g clip-rule="evenodd" fill="rgb(255,255,255)" fill-rule="evenodd"><path d="m7 2.75c-.41421 0-.75.33579-.75.75v17c0 .4142.33579.75.75.75h10c.4142 0 .75-.3358.75-.75v-17c0-.41421-.3358-.75-.75-.75zm-2.25.75c0-1.24264 1.00736-2.25 2.25-2.25h10c1.2426 0 2.25 1.00736 2.25 2.25v17c0 1.2426-1.0074 2.25-2.25 2.25h-10c-1.24264 0-2.25-1.0074-2.25-2.25z"></path><path d="m10.25 5c0-.41421.3358-.75.75-.75h2c.4142 0 .75.33579.75.75s-.3358.75-.75.75h-2c-.4142 0-.75-.33579-.75-.75z"></path><path d="m9.25 19c0-.4142.33579-.75.75-.75h4c.4142 0 .75.3358.75.75s-.3358.75-.75.75h-4c-.41421 0-.75-.3358-.75-.75z"></path></g></svg>
-          </i> {{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}</a>
+          </i> <?php echo e(\App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com')); ?></a>
       </div>
     </div>
   </header>
@@ -632,15 +632,15 @@
     <div class="row">
       <div class="col-lg-12">
         <div class="hero-text">
-          <h2>{{ \App\Models\GeneralConfig::get('hero_title', 'Buat Undangan Digital') }} <span>{{ \App\Models\GeneralConfig::get('hero_highlight', 'Impianmu') }}</span></h2>
-          <p>{{ \App\Models\GeneralConfig::get('hero_subtitle', 'Mulai Sekarang Gratis!') }}</p>
-          @guest
-          <form role="form" class="get-subscribee" action="{{ route('login') }}" method="get">
+          <h2><?php echo e(\App\Models\GeneralConfig::get('hero_title', 'Buat Undangan Digital')); ?> <span><?php echo e(\App\Models\GeneralConfig::get('hero_highlight', 'Impianmu')); ?></span></h2>
+          <p><?php echo e(\App\Models\GeneralConfig::get('hero_subtitle', 'Mulai Sekarang Gratis!')); ?></p>
+          <?php if(auth()->guard()->guest()): ?>
+          <form role="form" class="get-subscribee" action="<?php echo e(route('login')); ?>" method="get">
             <button type="submit" class="btn"><span>Mulai Gratis</span></button>
           </form>
-          @else
-          <a href="{{ route('dashboard') }}" class="btn"><span>Ke Dashboard</span></a>
-          @endguest  
+          <?php else: ?>
+          <a href="<?php echo e(route('dashboard')); ?>" class="btn"><span>Ke Dashboard</span></a>
+          <?php endif; ?>  
         </div>
       </div>
     </div>
@@ -649,8 +649,8 @@
 <section id="about" class="gap">
   <div class="container">
     <div class="heading">
-      <span>{{ \App\Models\GeneralConfig::get('about_subtitle', 'SELAMAT DATANG DI UNDANGAN DIGITAL') }}</span>
-      <h2>{{ \App\Models\GeneralConfig::get('about_title', 'Platform Undangan Online Terlengkap') }}</h2>
+      <span><?php echo e(\App\Models\GeneralConfig::get('about_subtitle', 'SELAMAT DATANG DI UNDANGAN DIGITAL')); ?></span>
+      <h2><?php echo e(\App\Models\GeneralConfig::get('about_title', 'Platform Undangan Online Terlengkap')); ?></h2>
     </div>
     <div class="row align-items-center">
       <div class="col-lg-7">
@@ -662,12 +662,12 @@
       </div>
       <div class="col-lg-5">
         <div class="customize-text">
-          <p>{{ \App\Models\GeneralConfig::get('about_description', 'Buat undangan digital yang elegan dan profesional dengan mudah. Platform kami menyediakan berbagai template menarik, fitur musik, galeri foto, dan amplop digital untuk membuat undangan Anda sempurna.') }}</p>
+          <p><?php echo e(\App\Models\GeneralConfig::get('about_description', 'Buat undangan digital yang elegan dan profesional dengan mudah. Platform kami menyediakan berbagai template menarik, fitur musik, galeri foto, dan amplop digital untuk membuat undangan Anda sempurna.')); ?></p>
           <ul>
-              <li><img alt="check" src="{{ asset('demos-assets/img/check-b.png') }}">Template Premium & Basic</li>
-              <li><img alt="check" src="{{ asset('demos-assets/img/check-b.png') }}">Musik Latar Pilihan</li>
-              <li><img alt="check" src="{{ asset('demos-assets/img/check-b.png') }}">Galeri Foto Cantik</li>
-              <li><img alt="check" src="{{ asset('demos-assets/img/check-b.png') }}">Amplop Digital</li>
+              <li><img alt="check" src="<?php echo e(asset('demos-assets/img/check-b.png')); ?>">Template Premium & Basic</li>
+              <li><img alt="check" src="<?php echo e(asset('demos-assets/img/check-b.png')); ?>">Musik Latar Pilihan</li>
+              <li><img alt="check" src="<?php echo e(asset('demos-assets/img/check-b.png')); ?>">Galeri Foto Cantik</li>
+              <li><img alt="check" src="<?php echo e(asset('demos-assets/img/check-b.png')); ?>">Amplop Digital</li>
             </ul>
         </div>
       </div>
@@ -683,21 +683,21 @@
     <div class="row">
       <div class="col-lg-4 col-md-6">
         <div class="server">
-          <i><img alt="server" src="{{ asset('demos-assets/img/server-1.png') }}"></i>
+          <i><img alt="server" src="<?php echo e(asset('demos-assets/img/server-1.png')); ?>"></i>
           <a href="#"><h5>Template Elegan</h5></a>
           <p>Pilihan template premium dan basic yang bisa disesuaikan dengan tema acara Anda. Desain modern dan responsif.</p>
         </div>
       </div>
       <div class="col-lg-4 col-md-6">
         <div class="server two">
-          <i><img alt="server" src="{{ asset('demos-assets/img/server-2.png') }}"></i>
+          <i><img alt="server" src="<?php echo e(asset('demos-assets/img/server-2.png')); ?>"></i>
           <a href="#"><h5>Musik & Galeri</h5></a>
           <p>Tambahkan musik favorit dan galeri foto untuk membuat undangan lebih personal dan berkesan.</p>
         </div>
       </div>
       <div class="col-lg-4 col-md-6">
         <div class="server three">
-          <i><img alt="server" src="{{ asset('demos-assets/img/server-3.png') }}"></i>
+          <i><img alt="server" src="<?php echo e(asset('demos-assets/img/server-3.png')); ?>"></i>
           <a href="#"><h5>Amplop Digital</h5></a>
           <p>Terima ucapan dan hadiah digital dari tamu undangan dengan fitur amplop digital yang mudah digunakan.</p>
         </div>
@@ -719,7 +719,7 @@
       <div class="col-lg-6">
         <div class="staps">
           <div class="staps-img">
-            <i><img alt="staps" src="{{ asset('demos-assets/img/shaps-1.png') }}"></i>
+            <i><img alt="staps" src="<?php echo e(asset('demos-assets/img/shaps-1.png')); ?>"></i>
             <span>1</span>
           </div>
           <div class="staps-text">
@@ -729,7 +729,7 @@
         </div>
         <div class="staps">
           <div class="staps-img">
-            <i><img alt="staps" src="{{ asset('demos-assets/img/shaps-2.png') }}"></i>
+            <i><img alt="staps" src="<?php echo e(asset('demos-assets/img/shaps-2.png')); ?>"></i>
             <span>2</span>
           </div>
           <div class="staps-text">
@@ -739,7 +739,7 @@
         </div>
         <div class="staps mb-lg-0">
           <div class="staps-img">
-            <i><img alt="staps" src="{{ asset('demos-assets/img/shaps-3.png') }}"></i>
+            <i><img alt="staps" src="<?php echo e(asset('demos-assets/img/shaps-3.png')); ?>"></i>
             <span>3</span>
           </div>
           <div class="staps-text">
@@ -757,10 +757,10 @@
       </div>
     </div>
   </div>
-  <img alt="lines" src="{{ asset('demos-assets/img/lines.png') }}" class="lines">
+  <img alt="lines" src="<?php echo e(asset('demos-assets/img/lines.png')); ?>" class="lines">
 </section>
 
-{{-- Template Gallery Section --}}
+
 <section id="template-gallery" class="gap">
   <div class="container">
     <div class="heading">
@@ -768,7 +768,7 @@
       <h2>Template Undangan Digital Pestamu Nanti</h2>
     </div>
     
-    {{-- Type Filter --}}
+    
     <div class="template-type-filter mb-4 text-center">
       <div class="btn-group" role="group">
         <a href="#" data-type="all" class="btn btn-outline-primary type-filter-btn active">
@@ -783,7 +783,7 @@
       </div>
     </div>
     
-    {{-- Category Tabs --}}
+    
     <div class="template-categories mb-4">
       <ul class="nav nav-pills justify-content-center" role="tablist">
         <li class="nav-item">
@@ -791,17 +791,18 @@
             Semua Template
           </a>
         </li>
-        @foreach($categories->where('slug', '!=', 'all') as $category)
+        <?php $__currentLoopData = $categories->where('slug', '!=', 'all'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <li class="nav-item">
-          <a href="#" data-category="{{ $category->slug }}" class="nav-link category-filter-btn">
-            {{ $category->name }}
+          <a href="#" data-category="<?php echo e($category->slug); ?>" class="nav-link category-filter-btn">
+            <?php echo e($category->name); ?>
+
           </a>
         </li>
-        @endforeach
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
       </ul>
     </div>
 
-    {{-- Loading Indicator --}}
+    
     <div id="template-loading" class="text-center py-5" style="display: none;">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -809,23 +810,23 @@
       <p class="mt-2 text-muted">Memuat template...</p>
     </div>
 
-    {{-- Template Content --}}
+    
     <div class="template-content">
       <div class="row g-3" id="template-grid">
-        @include('landing.partials.template-grid', ['templates' => $templates])
+        <?php echo $__env->make('landing.partials.template-grid', ['templates' => $templates], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
       </div>
     </div>
 
     <div class="text-center mt-5">
-      @auth
-      <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg">
+      <?php if(auth()->guard()->check()): ?>
+      <a href="<?php echo e(route('dashboard')); ?>" class="btn btn-primary btn-lg">
         <span>Mulai Buat Undangan</span>
       </a>
-      @else
-      <a href="{{ route('login') }}" class="btn btn-primary btn-lg">
+      <?php else: ?>
+      <a href="<?php echo e(route('login')); ?>" class="btn btn-primary btn-lg">
         <span>Daftar Sekarang</span>
       </a>
-      @endauth
+      <?php endif; ?>
     </div>
   </div>
 </section>
@@ -837,100 +838,101 @@
       <h2>Pilih Paket Yang Sesuai Dengan Kebutuhan Anda</h2>
     </div>
     <div class="row justify-content-center">
-      @foreach($plans as $plan)
+      <?php $__currentLoopData = $plans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
       <div class="col-lg-4 col-md-6">
-        <div class="pricing-plans {{ $plan->is_popular ? 'two' : '' }} {{ $plan->isBusinessPlan() ? 'business-plan' : '' }}">
-          @if($plan->is_popular)
+        <div class="pricing-plans <?php echo e($plan->is_popular ? 'two' : ''); ?> <?php echo e($plan->isBusinessPlan() ? 'business-plan' : ''); ?>">
+          <?php if($plan->is_popular): ?>
           <div style="background: rgba(104, 103, 102, 0.2); padding: 8px; margin: -20px -20px 15px; border-radius: 8px 8px 0 0;">
             <small style="color: #ffffffff; font-weight: bold;">⭐ PALING POPULER</small>
           </div>
-          @endif
-          @if($plan->isBusinessPlan())
+          <?php endif; ?>
+          <?php if($plan->isBusinessPlan()): ?>
           <div style="background: rgba(23, 162, 184, 0.2); padding: 8px; margin: -20px -20px 15px; border-radius: 8px 8px 0 0;">
             <small style="color: #ffffffff; font-weight: bold;">🏢 PAKET BISNIS</small>
           </div>
-          @endif
-          <span>{{ $plan->name }}</span>
-          <h5>{{ $plan->formattedPrice() }}</h5>
+          <?php endif; ?>
+          <span><?php echo e($plan->name); ?></span>
+          <h5><?php echo e($plan->formattedPrice()); ?></h5>
         </div>
-        <div class="pricing-plans-text {{ $loop->last ? 'mb-0' : '' }}">
+        <div class="pricing-plans-text <?php echo e($loop->last ? 'mb-0' : ''); ?>">
           <i><svg enable-background="new 0 0 512 512" height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg"><g><path d="m376.437 232.804v-130.342h30.125v-27.213l-75.249-75.249-75.25 75.25v27.213h30.125v81.052c-9.792-1.811-19.88-2.766-30.188-2.766s-20.396.955-30.188 2.766v-33.059h30.125v-27.213l-75.249-75.25-75.25 75.25v27.213h30.125v82.347c-27.998 29.674-45.187 69.65-45.187 113.57-.001 91.327 74.298 165.627 165.624 165.627s165.625-74.3 165.625-165.625c0-43.92-17.19-83.897-45.188-113.571zm-75.161-160.341 30.037-30.037 30.036 30.036h-14.912v135.228c-9.461-6.19-19.586-11.444-30.25-15.618v-119.609zm-120.588 17.957 30.037 30.037h-14.912v71.616c-10.664 4.174-20.789 9.428-30.25 15.618v-87.233h-14.912zm75.312 391.58c-74.784 0-135.625-60.841-135.625-135.625s60.841-135.625 135.625-135.625 135.625 60.841 135.625 135.625-60.842 135.625-135.625 135.625z"/><path d="m263.88 331.376h-15.757c-7.547 0-13.687-6.14-13.687-13.687 0-7.546 6.14-13.686 13.687-13.686h15.396c7.557 0 13.704 6.147 13.704 13.704h30c0-21.546-15.677-39.488-36.222-43.049v-18.659h-30v18.595c-20.712 3.412-36.565 21.433-36.565 43.097 0 24.088 19.598 43.686 43.687 43.686h15.757c7.547 0 13.687 6.14 13.687 13.687s-6.14 13.687-13.687 13.687h-16.038c-7.267 0-13.178-5.912-13.178-13.178h-30c0 21.48 15.769 39.342 36.337 42.631v18.553h30v-18.595c20.712-3.411 36.565-21.433 36.565-43.097.001-24.091-19.597-43.689-43.686-43.689z"/></g></svg></i>
             <div class="hero-text">
-              {{-- Partnership Logo untuk Business Plan --}}
-              @if($plan->show_partnership_logo && $partners->count() > 0)
+              
+              <?php if($plan->show_partnership_logo && $partners->count() > 0): ?>
               <div class="partnership-logos mb-3">
                 <p class="text-center mb-2" style="font-size: 14px; opacity: 0.8;">Partner Kami:</p>
                 <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
-                  @foreach($partners->take(4) as $partner)
-                    @if($partner->logo)
-                      <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" style="max-height: 40px; width: auto; opacity: 0.7;">
-                    @else
-                      <span style="font-size: 12px; opacity: 0.6;">{{ $partner->name }}</span>
-                    @endif
-                  @endforeach
+                  <?php $__currentLoopData = $partners->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $partner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if($partner->logo): ?>
+                      <img src="<?php echo e($partner->logo_url); ?>" alt="<?php echo e($partner->name); ?>" style="max-height: 40px; width: auto; opacity: 0.7;">
+                    <?php else: ?>
+                      <span style="font-size: 12px; opacity: 0.6;"><?php echo e($partner->name); ?></span>
+                    <?php endif; ?>
+                  <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
               </div>
-              @endif
+              <?php endif; ?>
               
-              {{-- Batas detail seperti di subscription page --}}
+              
               <div class="pricing-detail-box">
                 <div class="pricing-detail-row">
                   <span class="pricing-detail-label">Undangan</span>
-                  <strong class="pricing-detail-value">{{ $plan->max_invitations >= 999 ? 'Unlimited' : $plan->max_invitations }}</strong>
+                  <strong class="pricing-detail-value"><?php echo e($plan->max_invitations >= 999 ? 'Unlimited' : $plan->max_invitations); ?></strong>
                 </div>
                 <div class="pricing-detail-row">
                   <span class="pricing-detail-label">Foto Galeri</span>
-                  <strong class="pricing-detail-value">{{ $plan->max_gallery_photos ?? 'Unlimited' }}</strong>
+                  <strong class="pricing-detail-value"><?php echo e($plan->max_gallery_photos ?? 'Unlimited'); ?></strong>
                 </div>
                 <div class="pricing-detail-row">
                   <span class="pricing-detail-label">Upload Lagu</span>
-                  <strong class="pricing-detail-value">{{ $plan->max_music_uploads === null ? 'Unlimited' : ($plan->max_music_uploads === 0 ? 'Tidak bisa' : $plan->max_music_uploads . ' lagu') }}</strong>
+                  <strong class="pricing-detail-value"><?php echo e($plan->max_music_uploads === null ? 'Unlimited' : ($plan->max_music_uploads === 0 ? 'Tidak bisa' : $plan->max_music_uploads . ' lagu')); ?></strong>
                 </div>
                 <div class="pricing-detail-row">
                   <span class="pricing-detail-label">Gift Section</span>
-                  <strong class="pricing-detail-value {{ $plan->gift_section_included ? 'text-success' : 'text-warning' }}">
-                    {{ $plan->gift_section_included ? 'Gratis' : 'Rp 10.000' }}
+                  <strong class="pricing-detail-value <?php echo e($plan->gift_section_included ? 'text-success' : 'text-warning'); ?>">
+                    <?php echo e($plan->gift_section_included ? 'Gratis' : 'Rp 10.000'); ?>
+
                   </strong>
                 </div>
               </div>
 
-              {{-- Features list --}}
-              @if($plan->features && is_array($plan->features) && count($plan->features) > 0)
+              
+              <?php if($plan->features && is_array($plan->features) && count($plan->features) > 0): ?>
               <ul style="margin-bottom: 20px;">
-                @foreach($plan->features as $feature)
-                <li><img alt="check" src="{{ asset('demos-assets/img/check-b.png') }}"> {{ $feature }}</li>
-                @endforeach
+                <?php $__currentLoopData = $plan->features; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <li><img alt="check" src="<?php echo e(asset('demos-assets/img/check-b.png')); ?>"> <?php echo e($feature); ?></li>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
               </ul>
-              @endif
+              <?php endif; ?>
 
-              {{-- Button untuk Business Plan: WhatsApp --}}
-              @if($plan->isBusinessPlan())
-                @php
+              
+              <?php if($plan->isBusinessPlan()): ?>
+                <?php
                   $whatsapp = \App\Models\GeneralConfig::get('contact_phone');
                   $message = urlencode('Halo, saya tertarik dengan paket Business. Mohon informasi lebih lanjut.');
                   $waLink = $whatsapp ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $whatsapp) . '?text=' . $message : '#';
-                @endphp
-                <a href="{{ $waLink }}" target="_blank" class="btn btn-success">
+                ?>
+                <a href="<?php echo e($waLink); ?>" target="_blank" class="btn btn-success">
                   <span>Hubungi Admin</span>
                 </a>
-              @else
-                {{-- Button untuk paket public --}}
-                @auth
-                  <a href="{{ route('subscription.index') }}" class="btn"><span>Lihat Paket</span></a>
-                @else
-                  <a href="{{ route('login') }}" class="btn"><span>Pilih Paket</span></a>
-                @endauth
-              @endif
+              <?php else: ?>
+                
+                <?php if(auth()->guard()->check()): ?>
+                  <a href="<?php echo e(route('subscription.index')); ?>" class="btn"><span>Lihat Paket</span></a>
+                <?php else: ?>
+                  <a href="<?php echo e(route('login')); ?>" class="btn"><span>Pilih Paket</span></a>
+                <?php endif; ?>
+              <?php endif; ?>
             </div>
         </div>
       </div>
-      @endforeach
+      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
   </div>
 </section>
 
-{{-- Partners Section --}}
-@if($partners->count() > 0)
+
+<?php if($partners->count() > 0): ?>
 <section id="partners" class="gap">
   <div class="container">
     <div class="heading">
@@ -938,25 +940,25 @@
       <h2>Dipercaya Oleh Partner Terbaik</h2>
     </div>
     <div class="logodata owl-carousel owl-theme">
-      @foreach($partners as $partner)
+      <?php $__currentLoopData = $partners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $partner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
       <div class="partner item">
-        @if($partner->logo)
-          <a href="{{ $partner->site_url }}" target="_blank" rel="noopener noreferrer">
-            <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" style="max-height: 80px; width: auto; object-fit: contain;">
+        <?php if($partner->logo): ?>
+          <a href="<?php echo e($partner->site_url); ?>" target="_blank" rel="noopener noreferrer">
+            <img src="<?php echo e($partner->logo_url); ?>" alt="<?php echo e($partner->name); ?>" style="max-height: 80px; width: auto; object-fit: contain;">
           </a>
-        @else
-          <a href="{{ $partner->site_url }}" target="_blank" rel="noopener noreferrer" class="partner-text-link">
+        <?php else: ?>
+          <a href="<?php echo e($partner->site_url); ?>" target="_blank" rel="noopener noreferrer" class="partner-text-link">
             <div style="padding: 20px; text-align: center;">
-              <h5 class="partner-name" style="margin: 0; font-size: 16px;">{{ $partner->name }}</h5>
+              <h5 class="partner-name" style="margin: 0; font-size: 16px;"><?php echo e($partner->name); ?></h5>
             </div>
           </a>
-        @endif
+        <?php endif; ?>
       </div>
-      @endforeach
+      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
   </div>
 </section>
-@endif
+<?php endif; ?>
 
 <footer class="gap no-bottom">
   <div class="container">
@@ -964,20 +966,20 @@
       <div class="col-lg-4 col-md-6">
         <div class="logo">
           <a href="/">
-            @php
+            <?php
               $logoDark = \App\Models\GeneralConfig::get('logo_dark');
               $logoLight = \App\Models\GeneralConfig::get('logo_light');
-            @endphp
-            @if($logoDark)
-            <img alt="logo" src="{{ asset('storage/' . $logoDark) }}" class="logo-dark">
-            @else
-            <img alt="logo" src="{{ asset('demos-assets/img/logo.png') }}" class="logo-dark">
-            @endif
-            @if($logoLight)
-            <img alt="logo" src="{{ asset('storage/' . $logoLight) }}" class="logo-light" style="display: none;">
-            @else
-            <img alt="logo" src="{{ asset('demos-assets/img/logo.png') }}" class="logo-light" style="display: none;">
-            @endif
+            ?>
+            <?php if($logoDark): ?>
+            <img alt="logo" src="<?php echo e(asset('storage/' . $logoDark)); ?>" class="logo-dark">
+            <?php else: ?>
+            <img alt="logo" src="<?php echo e(asset('demos-assets/img/logo.png')); ?>" class="logo-dark">
+            <?php endif; ?>
+            <?php if($logoLight): ?>
+            <img alt="logo" src="<?php echo e(asset('storage/' . $logoLight)); ?>" class="logo-light" style="display: none;">
+            <?php else: ?>
+            <img alt="logo" src="<?php echo e(asset('demos-assets/img/logo.png')); ?>" class="logo-light" style="display: none;">
+            <?php endif; ?>
           </a>
         </div>
       </div>
@@ -985,27 +987,27 @@
         <div class="links">
           <h5>Informasi</h5>
           <div class="line"></div>
-          <p>{{ \App\Models\GeneralConfig::get('site_description', 'Platform undangan online terlengkap untuk acara spesial Anda. Mudah, cepat, dan profesional.') }}</p>
+          <p><?php echo e(\App\Models\GeneralConfig::get('site_description', 'Platform undangan online terlengkap untuk acara spesial Anda. Mudah, cepat, dan profesional.')); ?></p>
         </div>
       </div>
       <div class="col-lg-4 col-md-6">
         <div class="links">
           <h5>Hubungi Kami</h5>
           <div class="line"></div>
-          <span>Email:<a href="mailto:{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}">{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}</a></span>
-          @if(\App\Models\GeneralConfig::get('contact_phone'))
-          <span class="mt-2 d-block">Phone:<a href="tel:{{ \App\Models\GeneralConfig::get('contact_phone') }}">{{ \App\Models\GeneralConfig::get('contact_phone') }}</a></span>
-          @endif
+          <span>Email:<a href="mailto:<?php echo e(\App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com')); ?>"><?php echo e(\App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com')); ?></a></span>
+          <?php if(\App\Models\GeneralConfig::get('contact_phone')): ?>
+          <span class="mt-2 d-block">Phone:<a href="tel:<?php echo e(\App\Models\GeneralConfig::get('contact_phone')); ?>"><?php echo e(\App\Models\GeneralConfig::get('contact_phone')); ?></a></span>
+          <?php endif; ?>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
       <h3>Mulai Gratis Sekarang</h3>
       <p>Buat undangan digital pertama Anda dan bagikan ke tamu dengan mudah</p>
-      <a href="{{ route('login') }}" class="btn"><span>Mulai Gratis</span></a>
+      <a href="<?php echo e(route('login')); ?>" class="btn"><span>Mulai Gratis</span></a>
     </div>
     <div class="footer-end">
-      <p>{{ date('Y') }} © {{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }} | Platform Undangan Digital</p>
+      <p><?php echo e(date('Y')); ?> © <?php echo e(\App\Models\GeneralConfig::get('site_name', config('app.name'))); ?> | Platform Undangan Digital</p>
     </div>
   </div>
   <div class="footer-shaps">
@@ -1016,12 +1018,12 @@
       <span id="progress-value"><i class="fa-solid fa-arrow-up"></i></span>
 </div>
 <!-- Bootstrap Js -->
-<script src="{{ asset('demos-assets/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('demos-assets/js/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('demos-assets/js/jquery.fancybox.min.js') }}"></script>
-<script src="{{ asset('demos-assets/js/custom.js') }}"></script>
+<script src="<?php echo e(asset('demos-assets/js/bootstrap.min.js')); ?>"></script>
+<script src="<?php echo e(asset('demos-assets/js/owl.carousel.min.js')); ?>"></script>
+<script src="<?php echo e(asset('demos-assets/js/jquery.fancybox.min.js')); ?>"></script>
+<script src="<?php echo e(asset('demos-assets/js/custom.js')); ?>"></script>
 
-{{-- Template Filter AJAX Script --}}
+
 <script>
 $(document).ready(function() {
   let currentCategory = 'all';
@@ -1070,7 +1072,7 @@ $(document).ready(function() {
     
     // AJAX request
     $.ajax({
-      url: '{{ route("landing.templates") }}',
+      url: '<?php echo e(route("landing.templates")); ?>',
       method: 'GET',
       data: {
         category: category,
@@ -1103,51 +1105,52 @@ $(document).ready(function() {
 });
 </script>
 
-{{-- Structured Data (Schema.org) for SEO --}}
+
 <script type="application/ld+json">
 {
-  "@@context": "https://schema.org",
-  "@@type": "Organization",
-  "name": "{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}",
-  "url": "{{ url('/') }}",
-  @if(\App\Models\GeneralConfig::get('logo_dark'))
-  "logo": "{{ asset('storage/' . \App\Models\GeneralConfig::get('logo_dark')) }}",
-  @endif
-  "description": "{{ \App\Models\GeneralConfig::get('site_description', 'Platform undangan online terlengkap untuk acara spesial Anda') }}",
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "<?php echo e(\App\Models\GeneralConfig::get('site_name', config('app.name'))); ?>",
+  "url": "<?php echo e(url('/')); ?>",
+  <?php if(\App\Models\GeneralConfig::get('logo_dark')): ?>
+  "logo": "<?php echo e(asset('storage/' . \App\Models\GeneralConfig::get('logo_dark'))); ?>",
+  <?php endif; ?>
+  "description": "<?php echo e(\App\Models\GeneralConfig::get('site_description', 'Platform undangan online terlengkap untuk acara spesial Anda')); ?>",
   "contactPoint": {
-    "@@type": "ContactPoint",
-    "email": "{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}",
-    @if(\App\Models\GeneralConfig::get('contact_phone'))
-    "telephone": "{{ \App\Models\GeneralConfig::get('contact_phone') }}",
-    @endif
+    "@type": "ContactPoint",
+    "email": "<?php echo e(\App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com')); ?>",
+    <?php if(\App\Models\GeneralConfig::get('contact_phone')): ?>
+    "telephone": "<?php echo e(\App\Models\GeneralConfig::get('contact_phone')); ?>",
+    <?php endif; ?>
     "contactType": "Customer Service"
   },
   "sameAs": [
-    @if(\App\Models\GeneralConfig::get('facebook_url'))
-    "{{ \App\Models\GeneralConfig::get('facebook_url') }}",
-    @endif
-    @if(\App\Models\GeneralConfig::get('instagram_url'))
-    "{{ \App\Models\GeneralConfig::get('instagram_url') }}",
-    @endif
-    @if(\App\Models\GeneralConfig::get('twitter_url'))
-    "{{ \App\Models\GeneralConfig::get('twitter_url') }}"
-    @endif
+    <?php if(\App\Models\GeneralConfig::get('facebook_url')): ?>
+    "<?php echo e(\App\Models\GeneralConfig::get('facebook_url')); ?>",
+    <?php endif; ?>
+    <?php if(\App\Models\GeneralConfig::get('instagram_url')): ?>
+    "<?php echo e(\App\Models\GeneralConfig::get('instagram_url')); ?>",
+    <?php endif; ?>
+    <?php if(\App\Models\GeneralConfig::get('twitter_url')): ?>
+    "<?php echo e(\App\Models\GeneralConfig::get('twitter_url')); ?>"
+    <?php endif; ?>
   ]
 }
 </script>
 
 <script type="application/ld+json">
 {
-  "@@context": "https://schema.org",
-  "@@type": "WebSite",
-  "name": "{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}",
-  "url": "{{ url('/') }}",
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "<?php echo e(\App\Models\GeneralConfig::get('site_name', config('app.name'))); ?>",
+  "url": "<?php echo e(url('/')); ?>",
   "potentialAction": {
-    "@@type": "SearchAction",
-    "target": "{{ url('/') }}?search={search_term_string}",
+    "@type": "SearchAction",
+    "target": "<?php echo e(url('/')); ?>?search={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 }
 </script>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\idorganizer\undangan\resources\views/landing/index.blade.php ENDPATH**/ ?>

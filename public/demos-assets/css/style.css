@@ -1319,7 +1319,6 @@ form#subscribe-form {
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: ;
 }
 button.btn {
     height: 60px;
