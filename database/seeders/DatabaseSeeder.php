@@ -156,6 +156,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // ── Sub-seeders ───────────────────────────────────────────────
+        $this->call(GeneralConfigSeeder::class);
         $this->call(TemplateCategorySeeder::class);
         $this->call(BasicTemplateSeeder::class);
         $this->call(PricingPlanSeeder::class);

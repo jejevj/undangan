@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   @php
-    $siteName = \App\Models\GeneralConfig::get('site_name', config('app.name'));
+    $siteName = \App\Models\GeneralConfig::get('site_name') ?: config('app.name');
     $metaTitle = \App\Models\GeneralConfig::get('meta_title');
     $pageTitle = $metaTitle ?: $siteName . ' - Undangan Digital';
   @endphp
   <title>{{ $pageTitle }}</title>
   <meta name="description" content="{{ \App\Models\GeneralConfig::get('meta_description', 'Platform undangan online terlengkap dengan template elegan, fitur musik, galeri foto, dan amplop digital') }}">
   <meta name="keywords" content="{{ \App\Models\GeneralConfig::get('meta_keywords', 'undangan digital, undangan online, wedding invitation, undangan pernikahan') }}">
-  <meta name="author" content="{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}">
+  <meta name="author" content="{{ $siteName }}">
   
   {{-- Upgrade insecure requests to HTTPS (temporary fix for mixed content) --}}
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
