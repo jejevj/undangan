@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dash/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /admin/
+Disallow: /api/
+
+# Allow public invitation pages
+Allow: /invitation/
+
+# Sitemap location
+Sitemap: https://undanganberpesta.ourtestcloud.my.id/sitemap.xml

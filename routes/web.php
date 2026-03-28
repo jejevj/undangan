@@ -21,6 +21,10 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\PricingPlanController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\GeneralConfigController;
+use App\Http\Controllers\SitemapController;
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Landing Page
 Route::get('/', [LandingController::class, 'index'])->name('landing');

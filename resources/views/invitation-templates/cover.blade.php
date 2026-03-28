@@ -5,8 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $invitation->title }}</title>
     
+    {{-- SEO Meta Tags --}}
+    <meta name="description" content="Undangan pernikahan {{ $data['groom_name'] ?? 'Mempelai Pria' }} & {{ $data['bride_name'] ?? 'Mempelai Wanita' }}">
+    
     {{-- Canonical URL --}}
     <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+    
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $invitation->title }}">
+    <meta property="og:description" content="Undangan pernikahan {{ $data['groom_name'] ?? 'Mempelai Pria' }} & {{ $data['bride_name'] ?? 'Mempelai Wanita' }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if(!empty($data['groom_photo']))
+    <meta property="og:image" content="{{ asset('storage/' . $data['groom_photo']) }}">
+    @elseif(!empty($data['bride_photo']))
+    <meta property="og:image" content="{{ asset('storage/' . $data['bride_photo']) }}">
+    @endif
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>

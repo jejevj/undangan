@@ -1102,5 +1102,52 @@ $(document).ready(function() {
   }
 });
 </script>
+
+{{-- Structured Data (Schema.org) for SEO --}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}",
+  "url": "{{ url('/') }}",
+  @if(\App\Models\GeneralConfig::get('logo_dark'))
+  "logo": "{{ asset('storage/' . \App\Models\GeneralConfig::get('logo_dark')) }}",
+  @endif
+  "description": "{{ \App\Models\GeneralConfig::get('site_description', 'Platform undangan online terlengkap untuk acara spesial Anda') }}",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}",
+    @if(\App\Models\GeneralConfig::get('contact_phone'))
+    "telephone": "{{ \App\Models\GeneralConfig::get('contact_phone') }}",
+    @endif
+    "contactType": "Customer Service"
+  },
+  "sameAs": [
+    @if(\App\Models\GeneralConfig::get('facebook_url'))
+    "{{ \App\Models\GeneralConfig::get('facebook_url') }}",
+    @endif
+    @if(\App\Models\GeneralConfig::get('instagram_url'))
+    "{{ \App\Models\GeneralConfig::get('instagram_url') }}",
+    @endif
+    @if(\App\Models\GeneralConfig::get('twitter_url'))
+    "{{ \App\Models\GeneralConfig::get('twitter_url') }}"
+    @endif
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}",
+  "url": "{{ url('/') }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ url('/') }}?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 </body>
 </html>

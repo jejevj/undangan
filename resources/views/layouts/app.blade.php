@@ -9,6 +9,9 @@
 
     {{-- Canonical URL --}}
     <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+    
+    {{-- Prevent dashboard from being indexed by search engines --}}
+    <meta name="robots" content="noindex, nofollow">
 
     @php
         $favicon = \App\Models\GeneralConfig::get('favicon');

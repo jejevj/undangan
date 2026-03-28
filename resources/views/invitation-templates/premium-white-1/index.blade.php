@@ -5,8 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $invitation->title }}</title>
     
+    {{-- SEO Meta Tags --}}
+    <meta name="description" content="Undangan pernikahan {{ $data['groom_name'] ?? 'Mempelai Pria' }} & {{ $data['bride_name'] ?? 'Mempelai Wanita' }}. {{ !empty($data['akad_date']) ? 'Tanggal: ' . \Carbon\Carbon::parse($data['akad_date'])->translatedFormat('d F Y') : '' }}">
+    <meta name="keywords" content="undangan pernikahan, wedding invitation, {{ $data['groom_name'] ?? '' }}, {{ $data['bride_name'] ?? '' }}">
+    
     {{-- Canonical URL --}}
     <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+    
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $invitation->title }}">
+    <meta property="og:description" content="Undangan pernikahan {{ $data['groom_name'] ?? 'Mempelai Pria' }} & {{ $data['bride_name'] ?? 'Mempelai Wanita' }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if(!empty($data['groom_photo']))
+    <meta property="og:image" content="{{ asset('storage/' . $data['groom_photo']) }}">
+    @elseif(!empty($data['bride_photo']))
+    <meta property="og:image" content="{{ asset('storage/' . $data['bride_photo']) }}">
+    @endif
+    
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $invitation->title }}">
+    <meta name="twitter:description" content="Undangan pernikahan {{ $data['groom_name'] ?? 'Mempelai Pria' }} & {{ $data['bride_name'] ?? 'Mempelai Wanita' }}">
+    @if(!empty($data['groom_photo']))
+    <meta name="twitter:image" content="{{ asset('storage/' . $data['groom_photo']) }}">
+    @elseif(!empty($data['bride_photo']))
+    <meta name="twitter:image" content="{{ asset('storage/' . $data['bride_photo']) }}">
+    @endif
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="{{ asset('invitation-assets/premium-white-1/css/style.css') }}" rel="stylesheet">
