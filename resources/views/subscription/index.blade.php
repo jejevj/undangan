@@ -44,12 +44,16 @@
 {{-- Pricing Cards --}}
 <div class="row justify-content-center g-4">
     @foreach($plans as $plan)
-    @php $isCurrent = $activePlan->id === $plan->id; @endphp
+    @php 
+        $isCurrent = $activePlan->id === $plan->id;
+        $isLowerTier = $plan->isLowerThan($activePlan);
+        $isHigherTier = $plan->isHigherThan($activePlan);
+    @endphp
     <div class="col-lg-4 col-md-6">
-        <div class="card h-100 {{ $plan->is_popular ? 'border-primary' : '' }} {{ $isCurrent ? 'border-success' : '' }}"
+        <div class="card h-100 {{ $plan->is_popular ? 'border-primary' : '' }} {{ $isCurrent ? 'border-success' : '' }} {{ $isLowerTier ? 'opacity-75' : '' }}"
              style="{{ $plan->is_popular ? 'border-width:2px' : '' }}">
 
-            @if($plan->is_popular)
+            @if($plan->is_popular && !$isLowerTier)
                 <div class="card-header bg-primary text-white text-center py-2">
                     <small class="fw-bold">⭐ PALING POPULER</small>
                 </div>
@@ -57,6 +61,16 @@
             @if($isCurrent)
                 <div class="card-header bg-success text-white text-center py-2">
                     <small class="fw-bold">✓ PAKET AKTIF ANDA</small>
+                </div>
+            @endif
+            @if($isLowerTier && !$isCurrent)
+                <div class="card-header bg-secondary text-white text-center py-2">
+                    <small class="fw-bold">🔒 PAKET LEBIH RENDAH</small>
+                </div>
+            @endif
+            @if($isHigherTier)
+                <div class="card-header bg-info text-white text-center py-2">
+                    <small class="fw-bold">⬆️ UPGRADE</small>
                 </div>
             @endif
 
@@ -108,9 +122,18 @@
                     <button class="btn btn-success w-100" disabled>Paket Aktif</button>
                 @elseif($plan->price === 0)
                     <button class="btn btn-outline-secondary w-100" disabled>Paket Default</button>
+                @elseif($plan->isLowerThan($activePlan))
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                        <i class="fa fa-lock me-1"></i>Paket Lebih Rendah
+                    </button>
+                    <small class="text-muted d-block mt-2">Anda sudah menggunakan paket {{ $activePlan->name }}</small>
                 @else
                     <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-{{ $plan->badge_color }} w-100">
-                        Pilih Paket {{ $plan->name }}
+                        @if($plan->isHigherThan($activePlan))
+                            <i class="fa fa-arrow-up me-1"></i>Upgrade ke {{ $plan->name }}
+                        @else
+                            Pilih Paket {{ $plan->name }}
+                        @endif
                     </a>
                 @endif
             </div>

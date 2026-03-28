@@ -112,6 +112,16 @@ class DokuVirtualAccount extends Model
     }
 
     /**
+     * Get VA number for display (without leading/trailing spaces)
+     * The VA number in database includes spaces for API validation,
+     * but customers should see it without spaces
+     */
+    public function getDisplayVaNumberAttribute(): string
+    {
+        return trim($this->virtual_account_no);
+    }
+
+    /**
      * Get bank name from channel
      */
     public function getBankNameAttribute(): string

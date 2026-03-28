@@ -68,4 +68,29 @@ class PricingPlan extends Model
     {
         return $this->hasMany(UserSubscription::class);
     }
+    
+    /**
+     * Check if this plan is higher tier than another plan
+     * Based on price comparison
+     */
+    public function isHigherThan(PricingPlan $otherPlan): bool
+    {
+        return $this->price > $otherPlan->price;
+    }
+    
+    /**
+     * Check if this plan is lower tier than another plan
+     */
+    public function isLowerThan(PricingPlan $otherPlan): bool
+    {
+        return $this->price < $otherPlan->price;
+    }
+    
+    /**
+     * Check if this plan is same tier as another plan
+     */
+    public function isSameTierAs(PricingPlan $otherPlan): bool
+    {
+        return $this->price === $otherPlan->price;
+    }
 }

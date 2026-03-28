@@ -11,6 +11,8 @@ class PaymentGatewayConfig extends Model
         'provider',
         'environment',
         'client_id',
+        'merchant_id',
+        'partner_service_id',
         'secret_key',
         'private_key',
         'public_key',

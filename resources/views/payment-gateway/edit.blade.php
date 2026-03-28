@@ -58,6 +58,24 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Partner Service ID</label>
+                        <input type="text" 
+                               name="partner_service_id" 
+                               class="form-control @error('partner_service_id') is-invalid @enderror" 
+                               value="{{ old('partner_service_id', $config->partner_service_id) }}"
+                               maxlength="8"
+                               placeholder="Contoh: '  888994' (max 7 spasi + 1-8 digit)">
+                        @error('partner_service_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">
+                            Partner Service ID untuk Virtual Account (max 7 spasi + 1-8 digit)<br>
+                            Format: '  888994' (spasi di depan + digit, total max 8 karakter)<br>
+                            Kosongkan untuk auto-generate dari Client ID
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Secret Key</label>
                         <input type="password" 
                                name="secret_key" 

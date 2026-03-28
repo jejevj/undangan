@@ -23,7 +23,7 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\GeneralConfigController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\PaymentGatewayConfigController;
-use App\Http\Controllers\DokuWebhookController;
+use App\Http\Controllers\Webhook\DokuWebhookController;
 
 // DOKU Webhook (no CSRF protection)
 Route::post('/webhook/doku/payment-notification', [DokuWebhookController::class, 'handlePaymentNotification'])
@@ -53,7 +53,17 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     // Subscription / Pricing
     Route::get('subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::get('subscription/{plan}/checkout', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+    Route::post('subscription/{order}/create-va', [SubscriptionController::class, 'createVirtualAccount'])->name('subscription.create-va');
+    Route::post('subscription/{order}/create-ewallet', [SubscriptionController::class, 'createEWalletPayment'])->name('subscription.create-ewallet');
+    Route::post('subscription/{order}/create-qris', [SubscriptionController::class, 'createQrisPayment'])->name('subscription.create-qris');
+    Route::get('subscription/{order}/ewallet-success', [SubscriptionController::class, 'ewalletSuccess'])->name('subscription.ewallet-success');
+    Route::get('subscription/{order}/ewallet-failed', [SubscriptionController::class, 'ewalletFailed'])->name('subscription.ewallet-failed');
     Route::post('subscription/{subscription}/pay', [SubscriptionController::class, 'simulatePay'])->name('subscription.pay');
+    
+    // Payment Status Check API
+    Route::post('api/payment/check-va-status', [\App\Http\Controllers\Api\PaymentStatusController::class, 'checkVAStatus'])->name('api.payment.check-va-status');
+    Route::post('api/payment/check-ewallet-status', [\App\Http\Controllers\Api\PaymentStatusController::class, 'checkEWalletStatus'])->name('api.payment.check-ewallet-status');
+    Route::post('api/payment/check-qris-status', [\App\Http\Controllers\Api\PaymentStatusController::class, 'checkQrisStatus'])->name('api.payment.check-qris-status');
 
     // Undangan
     Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
@@ -220,6 +230,15 @@ Route::prefix('dash')->middleware('auth')->group(function () {
             ->name('payment-gateway.debug-signature')
             ->middleware('can:payment-gateway.view');
     }
+
+    // Payment Channels Management
+    Route::prefix('admin/payment-channels')->name('admin.payment-channels.')->middleware('can:payment-channels.view')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PaymentChannelController::class, 'index'])->name('index');
+        Route::patch('{channel}/toggle', [\App\Http\Controllers\Admin\PaymentChannelController::class, 'toggleActive'])->name('toggle')->middleware('can:payment-channels.edit');
+        Route::patch('{channel}/update', [\App\Http\Controllers\Admin\PaymentChannelController::class, 'update'])->name('update')->middleware('can:payment-channels.edit');
+        Route::post('{channel}/check', [\App\Http\Controllers\Admin\PaymentChannelController::class, 'checkAvailability'])->name('check')->middleware('can:payment-channels.check-availability');
+        Route::post('check-all', [\App\Http\Controllers\Admin\PaymentChannelController::class, 'checkAllAvailability'])->name('check-all')->middleware('can:payment-channels.check-availability');
+    });
 
     // General Config
     Route::get('general-config', [GeneralConfigController::class, 'index'])
