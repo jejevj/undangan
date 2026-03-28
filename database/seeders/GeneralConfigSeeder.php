@@ -23,7 +23,7 @@ class GeneralConfigSeeder extends Seeder
             'hero_title' => 'Buat Undangan Digital',
             'hero_highlight' => 'Impianmu',
             'hero_subtitle' => 'Mulai Sekarang Gratis!',
-            'about_subtitle' => 'SELAMAT DATANG DI UNDANGAN DIGITAL',
+            'about_subtitle' => 'SELAMAT DATANG DI UNDANGAN BERPESTA',
             'about_title' => 'Platform Undangan Online Terlengkap',
             'about_description' => 'Buat undangan digital yang elegan dan profesional dengan mudah. Platform kami menyediakan berbagai template menarik, fitur musik, galeri foto, dan amplop digital untuk membuat undangan Anda sempurna.',
             'site_description' => 'Platform undangan online terlengkap untuk acara spesial Anda. Mudah, cepat, dan profesional.',

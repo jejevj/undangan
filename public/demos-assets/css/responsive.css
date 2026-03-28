@@ -56,7 +56,8 @@
     font-size: 32px;
   }
   header {
-    padding-top: 24px;
+    padding-top: 15px;
+    padding-bottom: 15px;
   }
   .hero-section.for {
     padding-bottom: 68px;
@@ -114,7 +115,7 @@
     height: 500px;
   }
   #stickyHeader.slideUp {
-    padding-bottom: 10px;
+    padding-bottom: 0 !important;
     padding-top: 10px;
 	}
 	.customize-text p {
@@ -487,7 +488,8 @@
     margin-top: 20px;
 	}
 	header {
-    padding-top: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
   }
   .logo img {
     width: 160px;

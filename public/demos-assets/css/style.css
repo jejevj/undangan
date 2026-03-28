@@ -108,6 +108,7 @@ figure {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 20px;
 }
 .top-bar ul {
     display: flex;
@@ -121,7 +122,7 @@ figure {
         border-radius: 0;
         left: 0;
         box-shadow: 0 2px 10px 0 rgb(0 0 0 / 10%);
-        padding-bottom: 20px;
+        padding-bottom: 0px;
         padding-top: 20px;
         background: linear-gradient(89.98deg,#f73859 .39%,#6e5cff 99.99%);
     }
