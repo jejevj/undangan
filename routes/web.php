@@ -23,6 +23,11 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\GeneralConfigController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\PaymentGatewayConfigController;
+use App\Http\Controllers\DokuWebhookController;
+
+// DOKU Webhook (no CSRF protection)
+Route::post('/webhook/doku/payment-notification', [DokuWebhookController::class, 'handlePaymentNotification'])
+    ->name('webhook.doku.payment-notification');
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
