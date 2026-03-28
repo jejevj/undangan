@@ -23,5 +23,11 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // Share canonical URL to all views
+        view()->composer('*', function ($view) {
+            $canonicalUrl = url()->current();
+            $view->with('canonicalUrl', $canonicalUrl);
+        });
     }
 }

@@ -9,6 +9,9 @@
     @endphp
     <title>Login & Registrasi - {{ $siteName }}</title>
     
+    {{-- Canonical URL --}}
+    <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+    
     @if(\App\Models\GeneralConfig::get('favicon'))
     <link rel="icon" href="{{ asset('storage/' . \App\Models\GeneralConfig::get('favicon')) }}">
     @else

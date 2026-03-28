@@ -7,6 +7,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - {{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}</title>
 
+    {{-- Canonical URL --}}
+    <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+
     @php
         $favicon = \App\Models\GeneralConfig::get('favicon');
     @endphp

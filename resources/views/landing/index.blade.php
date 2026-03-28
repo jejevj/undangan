@@ -13,6 +13,9 @@
   <meta name="keywords" content="{{ \App\Models\GeneralConfig::get('meta_keywords', 'undangan digital, undangan online, wedding invitation, undangan pernikahan') }}">
   <meta name="author" content="{{ $siteName }}">
   
+  {{-- Canonical URL --}}
+  <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+  
   {{-- Upgrade insecure requests to HTTPS (temporary fix for mixed content) --}}
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   
