@@ -59,7 +59,6 @@ class PricingPlanSeeder extends Seeder
                 '50 foto galeri (total)',
                 'Upload 4 lagu sendiri',
                 'Gift section (rekening bank) gratis',
-                'Manajemen tamu (maks 40)',
                 'Lagu yang diupload tidak bisa dihapus',
             ],
         ]);
