@@ -51,10 +51,17 @@ class ImportDokuConfig extends Command
             ]
         );
 
-        // Set encrypted fields directly (they are already encrypted in the export)
-        $config->attributes['secret_key'] = $data['secret_key'];
-        $config->attributes['private_key'] = $data['private_key'];
-        $config->save();
+        // Set encrypted fields using DB query to bypass mutators
+        // The keys are already encrypted in the export file
+        \DB::table('payment_gateway_configs')
+            ->where('id', $config->id)
+            ->update([
+                'secret_key' => $data['secret_key'],
+                'private_key' => $data['private_key'],
+            ]);
+
+        // Refresh model to get updated data
+        $config->refresh();
 
         $this->info('✓ DOKU configuration imported successfully');
         $this->line('');

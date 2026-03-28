@@ -75,9 +75,20 @@ This will create a JSON file with all configuration including encrypted keys.
 php artisan doku:import-config doku-config-backup.json
 ```
 
-**Important:** The export file contains encrypted keys. Make sure:
-- Both systems use the same `APP_KEY` in `.env`
+**Important:** 
+- The export file contains encrypted keys
+- Both systems must use the same `APP_KEY` in `.env` for decryption to work
+- The import command uses direct DB query to preserve encrypted values
 - Keep the export file secure (add to `.gitignore`)
+
+**Verification after import:**
+```bash
+# Test QRIS generation to verify keys work
+php artisan test:qris-generate 1 1000
+
+# Or test VA status check
+php artisan test:va-status-check 1
+```
 
 ### Method 3: Manual Database Insert
 
