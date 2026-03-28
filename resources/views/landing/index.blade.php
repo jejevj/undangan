@@ -569,7 +569,9 @@
     <div class="row align-items-center">
       <div class="col-lg-7">
         <div class="customize-img">
-          <img alt="customize" src="https://via.placeholder.com/714x593">
+          <div style="width:100%; height:400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display:flex; align-items:center; justify-content:center;">
+            <span style="color:white; font-size:24px; font-weight:600;">Platform Undangan Digital</span>
+          </div>
         </div>
       </div>
       <div class="col-lg-5">
@@ -662,7 +664,9 @@
       </div>
       <div class="col-lg-6">
         <div class="customize-img">
-          <img alt="customize" src="https://via.placeholder.com/636x571">
+          <div style="width:100%; height:400px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; display:flex; align-items:center; justify-content:center;">
+            <span style="color:white; font-size:24px; font-weight:600;">Template Elegan</span>
+          </div>
         </div>
       </div>
     </div>

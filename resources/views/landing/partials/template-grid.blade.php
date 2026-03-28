@@ -5,7 +5,9 @@
       @if($template->thumbnail)
       <img src="{{ asset('storage/' . $template->thumbnail) }}" alt="{{ $template->name }}">
       @else
-      <img src="https://via.placeholder.com/300x400" alt="{{ $template->name }}">
+      <div style="width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display:flex; align-items:center; justify-content:center;">
+        <span style="color:white; font-size:18px; font-weight:600; text-align:center; padding:20px;">{{ $template->name }}</span>
+      </div>
       @endif
     </div>
     <div class="template-info">
