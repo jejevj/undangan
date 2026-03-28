@@ -16,12 +16,17 @@ class MusicController extends Controller
      * 1. Lagu gratis (sistem)
      * 2. Lagu premium yang sudah dibeli
      * 3. Lagu yang diupload sendiri
+     * 4. Lagu premium gratis untuk paket Basic/Pro
      * 
      * UPDATE: Tampilkan juga musik premium yang belum dibeli (dengan opsi beli)
      */
     public function index()
     {
         $user = auth()->user();
+        $plan = $user->activePlan();
+        
+        // Cek apakah user punya akses premium gratis (Basic/Pro)
+        $hasPremiumAccess = in_array($plan->slug, ['basic', 'pro']) || $user->isAdmin();
         
         // Ambil semua musik aktif
         $allSongs = Music::where('is_active', true)
@@ -34,13 +39,14 @@ class MusicController extends Controller
         $myIds = $user->musicLibrary()->pluck('music_id')->toArray();
         
         // Filter: musik yang bisa diakses (untuk dropdown form)
-        $accessibleSongs = $allSongs->filter(function($song) use ($user, $myIds) {
+        $accessibleSongs = $allSongs->filter(function($song) use ($user, $myIds, $hasPremiumAccess) {
             return $song->isFree() 
                 || in_array($song->id, $myIds) 
-                || $song->uploaded_by === $user->id;
+                || $song->uploaded_by === $user->id
+                || ($hasPremiumAccess && $song->type === 'premium'); // Premium gratis untuk Basic/Pro
         });
 
-        return view('music.index', compact('allSongs', 'myIds', 'accessibleSongs'));
+        return view('music.index', compact('allSongs', 'myIds', 'accessibleSongs', 'hasPremiumAccess'));
     }
 
     /**
@@ -171,17 +177,26 @@ class MusicController extends Controller
      */
     public function buy(Music $music)
     {
+        $user = auth()->user();
+        $plan = $user->activePlan();
+        
         if ($music->isFree()) {
             return redirect()->route('music.index')->with('info', 'Lagu ini gratis, tidak perlu dibeli.');
         }
 
-        if (auth()->user()->hasAccessToMusic($music)) {
+        // Basic dan Pro bisa akses semua lagu premium gratis
+        if (in_array($plan->slug, ['basic', 'pro']) || $user->isAdmin()) {
+            return redirect()->route('music.index')
+                ->with('info', 'Paket ' . $plan->name . ' Anda sudah termasuk akses ke semua lagu premium secara gratis!');
+        }
+
+        if ($user->hasAccessToMusic($music)) {
             return redirect()->route('music.index')->with('info', 'Anda sudah memiliki akses ke lagu ini.');
         }
 
-        // Buat order pending
+        // Buat order pending (hanya untuk Free plan)
         $order = MusicOrder::firstOrCreate(
-            ['user_id' => auth()->id(), 'music_id' => $music->id, 'status' => 'pending'],
+            ['user_id' => $user->id, 'music_id' => $music->id, 'status' => 'pending'],
             [
                 'order_number'   => MusicOrder::generateOrderNumber(),
                 'amount'         => $music->price,

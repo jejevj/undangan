@@ -9,27 +9,37 @@
 @section('content')
 <p class="text-muted mb-4">
     Pilih lagu latar untuk undangan Anda. Lagu gratis langsung bisa digunakan.
+    @if(!$hasPremiumAccess)
     Lagu premium perlu dibeli terlebih dahulu.
+    @endif
 </p>
 
-<div class="d-flex gap-2 mb-4">
+<div class="d-flex gap-2 mb-4 flex-wrap">
     @php $activePlan = auth()->user()->activePlan(); @endphp
-    @if($activePlan->slug === 'free')
-        <a href="{{ route('music.upload') }}" class="btn btn-outline-primary btn-sm">
-            <i class="fa fa-upload"></i> Upload Lagu Saya (Rp 5.000)
-        </a>
+    
+    @if($hasPremiumAccess)
+        <div class="alert alert-success py-2 px-3 mb-0 flex-fill">
+            <i class="fa fa-crown"></i>
+            Paket <strong>{{ $activePlan->name }}</strong> — Semua lagu premium gratis!
+        </div>
     @else
         <div class="alert alert-info py-2 px-3 mb-0">
             <i class="fa fa-info-circle"></i>
-            Paket <strong>{{ $activePlan->name }}</strong> sudah termasuk akses musik premium.
+            Paket <strong>{{ $activePlan->name }}</strong> — Hanya lagu gratis
         </div>
+        <a href="{{ route('subscription.index') }}" class="btn btn-warning btn-sm">
+            <i class="fa fa-crown"></i> Upgrade untuk Akses Premium
+        </a>
     @endif
 </div>
 
 <div class="row">
     @forelse($allSongs as $song)
     @php 
-        $owned = $song->isFree() || in_array($song->id, $myIds) || $song->uploaded_by === auth()->id();
+        $owned = $song->isFree() 
+              || in_array($song->id, $myIds) 
+              || $song->uploaded_by === auth()->id()
+              || ($hasPremiumAccess && $song->type === 'premium');
         $canUse = $owned; // Bisa digunakan di undangan
     @endphp
     <div class="col-xl-3 col-md-4 col-sm-6 mt-3">
@@ -63,7 +73,7 @@
                     @if($song->isUserUpload() && $song->uploaded_by === auth()->id())
                         <span class="badge badge-info">Upload Saya</span>
                     @endif
-                    @if(!$song->isFree())
+                    @if(!$song->isFree() && !$hasPremiumAccess)
                         <span class="small fw-bold">{{ $song->formattedPrice() }}</span>
                     @endif
                     @if($song->duration)
@@ -91,17 +101,19 @@
                             Gratis — langsung gunakan
                         @elseif($song->uploaded_by === auth()->id())
                             Upload Saya
+                        @elseif($hasPremiumAccess && $song->type === 'premium')
+                            Premium gratis (Paket {{ $activePlan->name }})
                         @else
                             Sudah dibeli
                         @endif
                     </small>
                 @else
-                    {{-- Belum punya akses — tampilkan tombol beli --}}
+                    {{-- Belum punya akses — tampilkan tombol beli atau upgrade --}}
                     <a href="{{ route('music.buy', $song) }}" class="btn btn-warning btn-sm w-100">
                         <i class="fa fa-shopping-cart"></i> Beli — {{ $song->formattedPrice() }}
                     </a>
                     <small class="text-muted d-block mt-1 text-center">
-                        Beli untuk menggunakan di undangan
+                        Atau <a href="{{ route('subscription.index') }}">upgrade paket</a> untuk akses gratis
                     </small>
                 @endif
             </div>

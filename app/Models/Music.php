@@ -52,16 +52,26 @@ class Music extends Model
      * 1. Lagu gratis (sistem)
      * 2. Lagu premium yang sudah dibeli user
      * 3. Lagu yang diupload sendiri oleh user
+     * 4. Lagu premium gratis untuk paket Basic/Pro
      */
     public static function accessibleByUser(User $user): \Illuminate\Database\Eloquent\Collection
     {
         $purchasedIds = $user->musicLibrary()->pluck('music_id')->toArray();
+        $plan = $user->activePlan();
+        
+        // Basic dan Pro bisa akses semua lagu premium gratis
+        $hasPremiumAccess = in_array($plan->slug, ['basic', 'pro']) || $user->isAdmin();
 
         return static::where('is_active', true)
-            ->where(function ($q) use ($user, $purchasedIds) {
+            ->where(function ($q) use ($user, $purchasedIds, $hasPremiumAccess) {
                 $q->where('type', 'free')                          // gratis
                   ->orWhereIn('id', $purchasedIds)                 // sudah dibeli
                   ->orWhere('uploaded_by', $user->id);             // upload sendiri
+                
+                // Jika punya akses premium (Basic/Pro/Admin), tambahkan semua lagu premium
+                if ($hasPremiumAccess) {
+                    $q->orWhere('type', 'premium');
+                }
             })
             ->orderByRaw("CASE WHEN uploaded_by = {$user->id} THEN 0 ELSE 1 END") // upload sendiri di atas
             ->orderBy('type')
