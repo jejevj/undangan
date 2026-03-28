@@ -13,6 +13,9 @@
   <meta name="keywords" content="{{ \App\Models\GeneralConfig::get('meta_keywords', 'undangan digital, undangan online, wedding invitation, undangan pernikahan') }}">
   <meta name="author" content="{{ \App\Models\GeneralConfig::get('site_name', config('app.name')) }}">
   
+  {{-- Upgrade insecure requests to HTTPS (temporary fix for mixed content) --}}
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
   @if(\App\Models\GeneralConfig::get('google_site_verification'))
   <meta name="google-site-verification" content="{{ \App\Models\GeneralConfig::get('google_site_verification') }}">
   @endif
