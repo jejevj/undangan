@@ -50,19 +50,26 @@
                         </div>
                     </div>
 
-                    @if(!$user->isAdmin())
-                    <div class="alert alert-light border mb-3">
-                        <small class="text-muted">Paket aktif:</small>
-                        <span class="badge badge-{{ $activePlan->badge_color }} ms-1">{{ $activePlan->name }}</span>
-                        <a href="{{ route('users.show', $user) }}" class="small ms-2">Kelola paket →</a>
+                    <div class="form-group mb-3">
+                        <label>Paket Pricing</label>
+                        <select name="pricing_plan_id" class="form-control @error('pricing_plan_id') is-invalid @enderror">
+                            @foreach($plans as $plan)
+                                <option value="{{ $plan->id }}"
+                                    {{ $activePlan && $activePlan->id === $plan->id ? 'selected' : '' }}>
+                                    {{ $plan->name }} - {{ $plan->formattedPrice() }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('pricing_plan_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small class="text-muted">Pilih paket untuk user ini</small>
                     </div>
-                    @endif
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Update</button>
                         <a href="{{ route('users.show', $user) }}" class="btn btn-info">Detail</a>
                         <a href="{{ route('users.index') }}" class="btn btn-secondary">Batal</a>
-                    </div>                </form>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

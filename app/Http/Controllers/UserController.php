@@ -34,6 +34,7 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
+            'pricing_plan_id' => 'nullable|exists:pricing_plans,id',
         ]);
 
         $user = User::create([
@@ -49,21 +50,26 @@ class UserController extends Controller
             $user->assignRole('pengguna');
         }
 
-        // Assign free plan by default jika bukan admin
-        if (!in_array('admin', $request->roles ?? [])) {
+        // Assign pricing plan
+        $planId = $request->pricing_plan_id;
+        if (!$planId) {
+            // Default ke free plan jika tidak dipilih
             $freePlan = PricingPlan::where('slug', 'free')->first();
-            if ($freePlan) {
-                UserSubscription::create([
-                    'user_id'         => $user->id,
-                    'pricing_plan_id' => $freePlan->id,
-                    'order_number'    => UserSubscription::generateOrderNumber(),
-                    'amount'          => 0,
-                    'status'          => 'active',
-                    'payment_method'  => 'free',
-                    'starts_at'       => now(),
-                    'paid_at'         => now(),
-                ]);
-            }
+            $planId = $freePlan->id;
+        }
+        
+        $plan = PricingPlan::find($planId);
+        if ($plan) {
+            UserSubscription::create([
+                'user_id'         => $user->id,
+                'pricing_plan_id' => $plan->id,
+                'order_number'    => UserSubscription::generateOrderNumber(),
+                'amount'          => 0,
+                'status'          => 'active',
+                'payment_method'  => 'admin_assign',
+                'starts_at'       => now(),
+                'paid_at'         => now(),
+            ]);
         }
 
         return redirect()->route('users.index')->with('success', 'User berhasil dibuat.');
@@ -85,8 +91,9 @@ class UserController extends Controller
         $userRoles = $user->roles->pluck('name')->toArray();
         $plans     = PricingPlan::where('is_active', true)->orderBy('price')->get();
         $activePlan = $user->activePlan();
+        $activeSub = $user->activeSubscription();
 
-        return view('users.edit', compact('user', 'roles', 'userRoles', 'plans', 'activePlan'));
+        return view('users.edit', compact('user', 'roles', 'userRoles', 'plans', 'activePlan', 'activeSub'));
     }
 
     public function update(Request $request, User $user)
@@ -94,6 +101,7 @@ class UserController extends Controller
         $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'pricing_plan_id' => 'nullable|exists:pricing_plans,id',
         ]);
 
         $user->update(['name' => $request->name, 'email' => $request->email]);
@@ -104,6 +112,31 @@ class UserController extends Controller
         }
 
         $user->syncRoles($request->roles ?? []);
+
+        // Update pricing plan jika ada perubahan
+        if ($request->filled('pricing_plan_id')) {
+            $currentPlan = $user->activePlan();
+            
+            // Cek apakah paket berubah
+            if (!$currentPlan || $currentPlan->id != $request->pricing_plan_id) {
+                $plan = PricingPlan::findOrFail($request->pricing_plan_id);
+                
+                // Nonaktifkan subscription lama
+                $user->subscriptions()->where('status', 'active')->update(['status' => 'expired']);
+                
+                // Buat subscription baru
+                UserSubscription::create([
+                    'user_id'         => $user->id,
+                    'pricing_plan_id' => $plan->id,
+                    'order_number'    => UserSubscription::generateOrderNumber(),
+                    'amount'          => 0,
+                    'status'          => 'active',
+                    'payment_method'  => 'admin_assign',
+                    'starts_at'       => now(),
+                    'paid_at'         => now(),
+                ]);
+            }
+        }
 
         return redirect()->route('users.index')->with('success', 'User berhasil diupdate.');
     }
@@ -133,7 +166,7 @@ class UserController extends Controller
             'paid_at'         => now(),
         ]);
 
-        return redirect()->route('users.show', $user)
+        return redirect()->route('users.edit', $user)
             ->with('success', "Paket {$plan->name} berhasil di-assign ke {$user->name}.");
     }
 
@@ -156,7 +189,7 @@ class UserController extends Controller
             'paid_at'         => now(),
         ]);
 
-        return redirect()->route('users.show', $user)
+        return redirect()->route('users.edit', $user)
             ->with('success', "Paket {$user->name} direset ke Free.");
     }
 

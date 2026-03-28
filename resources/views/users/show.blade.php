@@ -60,80 +60,64 @@
             </div>
         </div>
 
-        {{-- Paket Aktif --}}
-        @if(!$user->isAdmin())
+        {{-- Info Paket Aktif (Read-only) --}}
         <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Paket Aktif</h5>
-                @if($activePlan && $activePlan->slug !== 'free')
-                <form action="{{ route('users.revoke-plan', $user) }}" method="POST"
-                    data-confirm="Reset paket {{ $user->name }} ke Free?"
-                    data-confirm-title="Reset Paket" data-confirm-ok="Reset" data-confirm-type="warning">
-                    @csrf
-                    <button class="btn btn-outline-warning btn-xs">Reset ke Free</button>
-                </form>
-                @endif
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    Paket Aktif
+                    @if($user->isAdmin())
+                        <span class="badge badge-dark badge-sm ms-1">Admin</span>
+                    @endif
+                </h5>
             </div>
             <div class="card-body">
-                @if($activePlan)
-                <div class="text-center mb-3">
-                    <span class="badge badge-{{ $activePlan->badge_color }}" style="font-size:1rem;padding:8px 20px">
-                        {{ $activePlan->name }}
-                    </span>
-                    @if($activeSub)
-                        <div class="small text-muted mt-1">
-                            Sejak {{ $activeSub->starts_at?->format('d M Y') }}
-                            @if($activeSub->expires_at)
-                                · Hingga {{ $activeSub->expires_at->format('d M Y') }}
-                            @else
-                                · Selamanya
-                            @endif
-                        </div>
-                        <div class="small text-muted">
-                            via {{ $activeSub->payment_method === 'admin_assign' ? 'Admin' : ucfirst($activeSub->payment_method) }}
-                        </div>
+                @if($user->isAdmin())
+                    <div class="alert alert-dark mb-0">
+                        <i class="fa fa-shield"></i> 
+                        <strong>User ini adalah Admin.</strong><br>
+                        <small>Admin memiliki akses unlimited ke semua fitur.</small>
+                    </div>
+                @else
+                    @if($activePlan)
+                    <div class="text-center mb-3">
+                        <span class="badge badge-{{ $activePlan->badge_color }}" style="font-size:1rem;padding:8px 20px">
+                            {{ $activePlan->name }}
+                        </span>
+                        @if($activeSub)
+                            <div class="small text-muted mt-1">
+                                Sejak {{ $activeSub->starts_at?->format('d M Y') }}
+                                @if($activeSub->expires_at)
+                                    · Hingga {{ $activeSub->expires_at->format('d M Y') }}
+                                @else
+                                    · Selamanya
+                                @endif
+                            </div>
+                            <div class="small text-muted">
+                                via {{ $activeSub->payment_method === 'admin_assign' ? 'Admin' : ucfirst($activeSub->payment_method) }}
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Usage --}}
+                    @php
+                        $used = $user->invitationCount();
+                        $max  = $activePlan->max_invitations;
+                    @endphp
+                    <div class="small text-muted mb-1">Undangan: {{ $used }} / {{ $max }}</div>
+                    <div class="progress mb-3" style="height:5px">
+                        <div class="progress-bar bg-{{ $used >= $max ? 'danger' : 'success' }}"
+                             style="width:{{ min(100, ($used/$max)*100) }}%"></div>
+                    </div>
                     @endif
-                </div>
 
-                {{-- Usage --}}
-                @php
-                    $used = $user->invitationCount();
-                    $max  = $activePlan->max_invitations;
-                @endphp
-                <div class="small text-muted mb-1">Undangan: {{ $used }} / {{ $max }}</div>
-                <div class="progress mb-3" style="height:5px">
-                    <div class="progress-bar bg-{{ $used >= $max ? 'danger' : 'success' }}"
-                         style="width:{{ min(100, ($used/$max)*100) }}%"></div>
-                </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fa fa-pencil"></i> 
+                        <strong>Untuk mengubah paket:</strong><br>
+                        <small>Buka halaman <a href="{{ route('users.edit', $user) }}" class="alert-link">Edit User</a></small>
+                    </div>
                 @endif
-
-                {{-- Assign Plan --}}
-                <form action="{{ route('users.assign-plan', $user) }}" method="POST">
-                    @csrf
-                    <div class="form-group mb-2">
-                        <label class="small text-muted">Ubah Paket</label>
-                        <select name="plan_id" class="form-control form-control-sm">
-                            @foreach($plans as $plan)
-                                <option value="{{ $plan->id }}"
-                                    {{ $activePlan && $activePlan->id === $plan->id ? 'selected' : '' }}>
-                                    {{ $plan->name }} ({{ $plan->formattedPrice() }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label class="small text-muted">Berlaku Hingga (opsional)</label>
-                        <input type="date" name="expires_at" class="form-control form-control-sm"
-                            value="{{ $activeSub?->expires_at?->format('Y-m-d') }}">
-                        <small class="text-muted">Kosongkan = selamanya</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100">
-                        <i class="fa fa-check"></i> Assign Paket
-                    </button>
-                </form>
             </div>
         </div>
-        @endif
     </div>
 
     {{-- ── Kolom Kanan: Undangan & Riwayat ────────────────────────── --}}

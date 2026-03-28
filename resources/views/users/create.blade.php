@@ -49,6 +49,21 @@
                             @endforeach
                         </div>
                     </div>
+                    
+                    <div class="form-group mb-3">
+                        <label>Paket Pricing</label>
+                        <select name="pricing_plan_id" class="form-control @error('pricing_plan_id') is-invalid @enderror">
+                            <option value="">-- Pilih Paket (Default: Free) --</option>
+                            @foreach($plans as $plan)
+                            <option value="{{ $plan->id }}" {{ old('pricing_plan_id') == $plan->id ? 'selected' : '' }}>
+                                {{ $plan->name }} - {{ $plan->formattedPrice() }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('pricing_plan_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small class="text-muted">Kosongkan untuk assign paket Free secara default</small>
+                    </div>
+                    
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="{{ route('users.index') }}" class="btn btn-secondary">Batal</a>

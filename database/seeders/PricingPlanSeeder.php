@@ -68,7 +68,7 @@ class PricingPlanSeeder extends Seeder
         PricingPlan::updateOrCreate(['slug' => 'pro'], [
             'name'                    => 'Pro',
             'visibility'              => 'public',
-            'price'                   => 99000,
+            'price'                   => 140000,
             'billing_period'          => 'lifetime',
             'badge_color'             => 'warning',
             'is_popular'              => false,
@@ -117,7 +117,6 @@ class PricingPlanSeeder extends Seeder
                 'Logo Partnership di Landing Page',
                 'Dedicated Account Manager',
                 'Custom Branding',
-                'API Access',
                 'Priority Support 24/7',
             ],
         ]);
