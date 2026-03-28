@@ -449,6 +449,7 @@
        justify-content: center;
        min-height: 120px;
        transition: all 0.3s;
+       border: none !important;
      }
      
      #partners .partner.item:hover {
