@@ -22,3 +22,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# DOKU RSA Keys (NEVER commit these!)
+doku_private.key
+doku_public.key
+doku_public_key.pem
+*_private.key
+*_backup.key

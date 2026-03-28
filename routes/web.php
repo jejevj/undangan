@@ -22,6 +22,7 @@ use App\Http\Controllers\PricingPlanController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\GeneralConfigController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\PaymentGatewayConfigController;
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -193,6 +194,27 @@ Route::prefix('dash')->middleware('auth')->group(function () {
         'update'  => 'can:edit-partners',
         'destroy' => 'can:delete-partners',
     ]);
+
+    // Payment Gateway Configuration
+    Route::resource('payment-gateway', PaymentGatewayConfigController::class)->middleware([
+        'index'   => 'can:payment-gateway.view',
+        'show'    => 'can:payment-gateway.view',
+        'create'  => 'can:payment-gateway.create',
+        'store'   => 'can:payment-gateway.create',
+        'edit'    => 'can:payment-gateway.edit',
+        'update'  => 'can:payment-gateway.edit',
+        'destroy' => 'can:payment-gateway.delete',
+    ]);
+    Route::post('payment-gateway/{paymentGateway}/test-connection', [PaymentGatewayConfigController::class, 'testConnection'])
+        ->name('payment-gateway.test-connection')
+        ->middleware('can:payment-gateway.view');
+    
+    // Debug signature (only in debug mode)
+    if (config('app.debug')) {
+        Route::get('payment-gateway/{paymentGateway}/debug-signature', [PaymentGatewayConfigController::class, 'debugSignature'])
+            ->name('payment-gateway.debug-signature')
+            ->middleware('can:payment-gateway.view');
+    }
 
     // General Config
     Route::get('general-config', [GeneralConfigController::class, 'index'])
