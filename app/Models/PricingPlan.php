@@ -8,14 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PricingPlan extends Model
 {
     protected $fillable = [
-        'slug', 'name', 'price', 'badge_color', 'is_popular',
+        'slug', 'name', 'visibility', 'price', 'billing_period', 'badge_color', 'is_popular',
         'max_invitations', 'max_premium_templates', 'max_gallery_photos', 'max_music_uploads',
-        'gift_section_included', 'can_delete_music', 'features', 'is_active',
+        'gift_section_included', 'show_partnership_logo', 'can_delete_music', 'features', 'is_active',
     ];
 
     protected $casts = [
         'is_popular'             => 'boolean',
         'gift_section_included'  => 'boolean',
+        'show_partnership_logo'  => 'boolean',
         'can_delete_music'       => 'boolean',
         'is_active'              => 'boolean',
         'features'               => 'array',
@@ -27,10 +28,40 @@ class PricingPlan extends Model
     ];
 
     public function isFree(): bool { return $this->price === 0; }
+    
+    public function isBusinessPlan(): bool { return $this->visibility === 'business'; }
 
     public function formattedPrice(): string
     {
-        return $this->price === 0 ? 'Gratis' : 'Rp ' . number_format($this->price, 0, ',', '.');
+        if ($this->price === 0) {
+            return 'Gratis';
+        }
+        
+        $price = 'Rp ' . number_format($this->price, 0, ',', '.');
+        
+        if ($this->billing_period === 'monthly') {
+            $price .= ' / bulan';
+        } elseif ($this->billing_period === 'yearly') {
+            $price .= ' / tahun';
+        }
+        
+        return $price;
+    }
+    
+    /**
+     * Scope untuk hanya paket public (bisa dibeli langsung)
+     */
+    public function scopePublicPlans($query)
+    {
+        return $query->where('visibility', 'public');
+    }
+    
+    /**
+     * Scope untuk paket business (hubungi admin)
+     */
+    public function scopeBusinessPlans($query)
+    {
+        return $query->where('visibility', 'business');
     }
 
     public function subscriptions(): HasMany

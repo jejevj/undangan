@@ -13,18 +13,21 @@ class PricingPlanSeeder extends Seeder
     {
         // ── 1. Free ───────────────────────────────────────────────────
         PricingPlan::updateOrCreate(['slug' => 'free'], [
-            'name'                  => 'Free',
-            'price'                 => 0,
-            'badge_color'           => 'secondary',
-            'is_popular'            => false,
-            'max_invitations'       => 1,
-            'max_premium_templates' => 0,  // Tidak bisa akses premium template
-            'max_gallery_photos'    => 2,
-            'max_music_uploads'     => 0,
-            'gift_section_included' => false,
-            'can_delete_music'      => true,
-            'is_active'             => true,
-            'features'              => [
+            'name'                    => 'Free',
+            'visibility'              => 'public',
+            'price'                   => 0,
+            'billing_period'          => 'lifetime',
+            'badge_color'             => 'secondary',
+            'is_popular'              => false,
+            'max_invitations'         => 1,
+            'max_premium_templates'   => 0,  // Tidak bisa akses premium template
+            'max_gallery_photos'      => 2,
+            'max_music_uploads'       => 0,
+            'gift_section_included'   => false,
+            'show_partnership_logo'   => false,
+            'can_delete_music'        => true,
+            'is_active'               => true,
+            'features'                => [
                 '1 undangan digital',
                 'Template gratis saja',
                 '2 foto galeri',
@@ -36,18 +39,21 @@ class PricingPlanSeeder extends Seeder
 
         // ── 2. Basic ──────────────────────────────────────────────────
         PricingPlan::updateOrCreate(['slug' => 'basic'], [
-            'name'                  => 'Basic',
-            'price'                 => 49000,
-            'badge_color'           => 'primary',
-            'is_popular'            => true,
-            'max_invitations'       => 3,
-            'max_premium_templates' => 3,  // Bisa pakai 3 template premium gratis
-            'max_gallery_photos'    => 50,
-            'max_music_uploads'     => 4,
-            'gift_section_included' => true,
-            'can_delete_music'      => false,  // lagu upload tidak bisa dihapus
-            'is_active'             => true,
-            'features'              => [
+            'name'                    => 'Basic',
+            'visibility'              => 'public',
+            'price'                   => 49000,
+            'billing_period'          => 'lifetime',
+            'badge_color'             => 'primary',
+            'is_popular'              => true,
+            'max_invitations'         => 3,
+            'max_premium_templates'   => 3,  // Bisa pakai 3 template premium gratis
+            'max_gallery_photos'      => 50,
+            'max_music_uploads'       => 4,
+            'gift_section_included'   => true,
+            'show_partnership_logo'   => false,
+            'can_delete_music'        => false,  // lagu upload tidak bisa dihapus
+            'is_active'               => true,
+            'features'                => [
                 '3 undangan digital',
                 '3 template premium gratis',
                 '50 foto galeri (total)',
@@ -60,18 +66,21 @@ class PricingPlanSeeder extends Seeder
 
         // ── 3. Pro ────────────────────────────────────────────────────
         PricingPlan::updateOrCreate(['slug' => 'pro'], [
-            'name'                  => 'Pro',
-            'price'                 => 99000,
-            'badge_color'           => 'warning',
-            'is_popular'            => false,
-            'max_invitations'       => 10,
-            'max_premium_templates' => null,   // unlimited premium templates
-            'max_gallery_photos'    => null,   // unlimited
-            'max_music_uploads'     => null,   // unlimited
-            'gift_section_included' => true,
-            'can_delete_music'      => true,
-            'is_active'             => true,
-            'features'              => [
+            'name'                    => 'Pro',
+            'visibility'              => 'public',
+            'price'                   => 99000,
+            'billing_period'          => 'lifetime',
+            'badge_color'             => 'warning',
+            'is_popular'              => false,
+            'max_invitations'         => 10,
+            'max_premium_templates'   => null,   // unlimited premium templates
+            'max_gallery_photos'      => null,   // unlimited
+            'max_music_uploads'       => null,   // unlimited
+            'gift_section_included'   => true,
+            'show_partnership_logo'   => false,
+            'can_delete_music'        => true,
+            'is_active'               => true,
+            'features'                => [
                 '10 undangan digital',
                 'Semua template premium unlimited',
                 'Foto galeri unlimited',
@@ -79,6 +88,37 @@ class PricingPlanSeeder extends Seeder
                 'Gift section gratis',
                 'Manajemen tamu unlimited',
                 'Semua fitur premium',
+            ],
+        ]);
+
+        // ── 4. Business ───────────────────────────────────────────────
+        PricingPlan::updateOrCreate(['slug' => 'business'], [
+            'name'                    => 'Business',
+            'visibility'              => 'business',
+            'price'                   => 499000,
+            'billing_period'          => 'monthly',
+            'badge_color'             => 'info',
+            'is_popular'              => false,
+            'max_invitations'         => 999,
+            'max_premium_templates'   => null,   // unlimited
+            'max_gallery_photos'      => null,   // unlimited
+            'max_music_uploads'       => null,   // unlimited
+            'gift_section_included'   => true,
+            'show_partnership_logo'   => true,   // tampilkan logo partnership
+            'can_delete_music'        => true,
+            'is_active'               => true,
+            'features'                => [
+                'Unlimited undangan digital',
+                'Semua template premium unlimited',
+                'Foto galeri unlimited',
+                'Upload lagu unlimited',
+                'Gift section gratis',
+                'Manajemen tamu unlimited',
+                'Logo Partnership di Landing Page',
+                'Dedicated Account Manager',
+                'Custom Branding',
+                'API Access',
+                'Priority Support 24/7',
             ],
         ]);
 
@@ -100,6 +140,6 @@ class PricingPlanSeeder extends Seeder
                 ]);
             });
 
-        $this->command->info('Pricing plans seeded: Free, Basic, Pro');
+        $this->command->info('Pricing plans seeded: Free, Basic, Pro, Business');
     }
 }

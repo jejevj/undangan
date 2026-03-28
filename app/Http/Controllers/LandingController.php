@@ -22,6 +22,7 @@ class LandingController extends Controller
             ->limit(12)
             ->get();
             
+        // Load all active plans (public and business)
         $plans = PricingPlan::where('is_active', true)->orderBy('price')->get();
         
         // Load active partners ordered by display order

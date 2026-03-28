@@ -10,7 +10,8 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $plans       = PricingPlan::where('is_active', true)->orderBy('price')->get();
+        // Hanya tampilkan paket public (sembunyikan business)
+        $plans       = PricingPlan::publicPlans()->where('is_active', true)->orderBy('price')->get();
         $activePlan  = auth()->user()->activePlan();
         $activeSub   = auth()->user()->activeSubscription();
 
@@ -19,6 +20,12 @@ class SubscriptionController extends Controller
 
     public function checkout(PricingPlan $plan)
     {
+        // Cegah checkout untuk business plan
+        if ($plan->isBusinessPlan()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Paket Business hanya bisa diaktifkan melalui admin. Silakan hubungi kami.');
+        }
+        
         if ($plan->isFree()) {
             return redirect()->route('subscription.index')->with('info', 'Paket Free sudah aktif secara default.');
         }
