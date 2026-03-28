@@ -415,6 +415,59 @@
        white-space: nowrap;
        border: 0;
      }
+     
+     /* Mobile Menu Button - Hidden on Desktop */
+     .navbar-toggler {
+       display: none;
+       background: transparent;
+       border: none;
+       color: white;
+       font-size: 24px;
+       cursor: pointer;
+       padding: 8px 12px;
+       transition: all 0.3s;
+     }
+     
+     .navbar-toggler:hover {
+       opacity: 0.8;
+     }
+     
+     .navbar-toggler i {
+       transition: all 0.3s;
+     }
+     
+     @media (max-width: 1200px) {
+       .navbar-toggler {
+         display: block;
+       }
+     }
+     
+     /* Partner Section Styles */
+     #partners .partner.item {
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       min-height: 120px;
+       transition: all 0.3s;
+     }
+     
+     #partners .partner.item:hover {
+       transform: translateY(-5px);
+     }
+     
+     #partners .partner.item a {
+       display: block;
+       width: 100%;
+       text-decoration: none;
+     }
+     
+     body.dark #partners .partner.item h5 {
+       color: rgba(255,255,255,0.9);
+     }
+     
+     body.light #partners .partner.item h5 {
+       color: rgba(0,0,0,0.8);
+     }
    </style>
    <!-- jquery -->
    <script src="{{ asset('demos-assets/js/jquery-3.6.0.min.js') }}"></script>
@@ -520,6 +573,12 @@
           <img alt="logo" src="{{ asset('demos-assets/img/logo.png') }}" class="logo-light" style="display: none;">
           @endif
         </div>
+        
+        {{-- Hamburger Menu Button for Mobile --}}
+        <button class="navbar-toggler" type="button">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        
         <nav>
           <ul>
             <li><a href="#about" class="text-white">Tentang</a></li>
@@ -531,10 +590,10 @@
             @else
                 <li><a href="{{ route('login') }}" class="text-white">Login</a></li>
             @endauth
-            <li><a class="theme-toggle" class="text-white"><i class="fa-solid fa-moon"></i></a></li>
+            <li><a class="theme-toggle text-white" href="#"><i class="fa-solid fa-moon"></i></a></li>
           </ul>
         </nav>
-        <a class="text-white" href="mailto:{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}"><i>
+        <a class="text-white contact-link" href="mailto:{{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}"><i>
             <svg height="112" viewBox="0 0 24 24" width="112" xmlns="http://www.w3.org/2000/svg"><g clip-rule="evenodd" fill="rgb(255,255,255)" fill-rule="evenodd"><path d="m7 2.75c-.41421 0-.75.33579-.75.75v17c0 .4142.33579.75.75.75h10c.4142 0 .75-.3358.75-.75v-17c0-.41421-.3358-.75-.75-.75zm-2.25.75c0-1.24264 1.00736-2.25 2.25-2.25h10c1.2426 0 2.25 1.00736 2.25 2.25v17c0 1.2426-1.0074 2.25-2.25 2.25h-10c-1.24264 0-2.25-1.0074-2.25-2.25z"></path><path d="m10.25 5c0-.41421.3358-.75.75-.75h2c.4142 0 .75.33579.75.75s-.3358.75-.75.75h-2c-.4142 0-.75-.33579-.75-.75z"></path><path d="m9.25 19c0-.4142.33579-.75.75-.75h4c.4142 0 .75.3358.75.75s-.3358.75-.75.75h-4c-.41421 0-.75-.3358-.75-.75z"></path></g></svg>
           </i> {{ \App\Models\GeneralConfig::get('contact_email', 'info@undanganberpesta.com') }}</a>
       </div>
@@ -808,6 +867,36 @@
     </div>
   </div>
 </section>
+
+{{-- Partners Section --}}
+@if($partners->count() > 0)
+<section id="partners" class="gap">
+  <div class="container">
+    <div class="heading">
+      <span>Partner Kami</span>
+      <h2>Dipercaya Oleh Partner Terbaik</h2>
+    </div>
+    <div class="logodata owl-carousel owl-theme">
+      @foreach($partners as $partner)
+      <div class="partner item">
+        @if($partner->logo)
+          <a href="{{ $partner->site_url }}" target="_blank" rel="noopener noreferrer">
+            <img src="{{ $partner->logo_url }}" alt="{{ $partner->name }}" style="max-height: 80px; width: auto; object-fit: contain;">
+          </a>
+        @else
+          <a href="{{ $partner->site_url }}" target="_blank" rel="noopener noreferrer">
+            <div style="padding: 20px; text-align: center;">
+              <h5 style="margin: 0; font-size: 16px; color: inherit;">{{ $partner->name }}</h5>
+            </div>
+          </a>
+        @endif
+      </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
 <footer class="gap no-bottom">
   <div class="container">
     <div class="row">

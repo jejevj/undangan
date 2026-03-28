@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Template;
 use App\Models\PricingPlan;
 use App\Models\TemplateCategory;
+use App\Models\Partner;
 use Illuminate\Http\Request;
 
 class LandingController extends Controller
@@ -23,7 +24,10 @@ class LandingController extends Controller
             
         $plans = PricingPlan::where('is_active', true)->orderBy('price')->get();
         
-        return view('landing.index', compact('categories', 'templates', 'plans'));
+        // Load active partners ordered by display order
+        $partners = Partner::active()->ordered()->get();
+        
+        return view('landing.index', compact('categories', 'templates', 'plans', 'partners'));
     }
     
     public function getTemplates(Request $request)

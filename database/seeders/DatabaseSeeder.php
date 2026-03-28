@@ -36,6 +36,8 @@ class DatabaseSeeder extends Seeder
             'manage-music',
             // Pricing Plans
             'view-pricing-plans', 'create-pricing-plans', 'edit-pricing-plans', 'delete-pricing-plans',
+            // Partners
+            'view-partners', 'create-partners', 'edit-partners', 'delete-partners',
             // General Config
             'view-general-config', 'edit-general-config',
         ];
@@ -114,10 +116,11 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Manajemen Template',  'slug' => 'templates',   'url' => '/dash/templates',   'order' => 2, 'permission_name' => 'view-templates'],
             ['name' => 'Manajemen Musik',     'slug' => 'admin-music', 'url' => '/dash/admin/music', 'order' => 3, 'permission_name' => 'manage-music'],
             ['name' => 'Manajemen Pricing',   'slug' => 'pricing-plans', 'url' => '/dash/pricing-plans', 'order' => 4, 'permission_name' => 'view-pricing-plans'],
-            ['name' => 'Manajemen User',      'slug' => 'users',       'url' => '/dash/users',       'order' => 5, 'permission_name' => 'view-users'],
-            ['name' => 'Manajemen Role',      'slug' => 'roles',       'url' => '/dash/roles',       'order' => 6, 'permission_name' => 'view-roles'],
-            ['name' => 'Manajemen Permission','slug' => 'permissions', 'url' => '/dash/permissions', 'order' => 7, 'permission_name' => 'view-permissions'],
-            ['name' => 'Manajemen Menu',      'slug' => 'menus',       'url' => '/dash/menus',       'order' => 8, 'permission_name' => 'view-menus'],
+            ['name' => 'Manajemen Partner',   'slug' => 'partners', 'url' => '/dash/partners', 'order' => 5, 'permission_name' => 'view-partners'],
+            ['name' => 'Manajemen User',      'slug' => 'users',       'url' => '/dash/users',       'order' => 6, 'permission_name' => 'view-users'],
+            ['name' => 'Manajemen Role',      'slug' => 'roles',       'url' => '/dash/roles',       'order' => 7, 'permission_name' => 'view-roles'],
+            ['name' => 'Manajemen Permission','slug' => 'permissions', 'url' => '/dash/permissions', 'order' => 8, 'permission_name' => 'view-permissions'],
+            ['name' => 'Manajemen Menu',      'slug' => 'menus',       'url' => '/dash/menus',       'order' => 9, 'permission_name' => 'view-menus'],
         ];
 
         foreach ($subMenus as $sub) {
@@ -158,5 +161,6 @@ class DatabaseSeeder extends Seeder
         $this->call(PricingPlanSeeder::class);
         $this->call(MusicSeeder::class);
         $this->call(InvitationSeeder::class);
+        $this->call(PartnerSeeder::class);
     }
 }

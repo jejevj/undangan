@@ -10,6 +10,8 @@
     @php
         $favicon = \App\Models\GeneralConfig::get('favicon');
     @endphp
+  {{-- Upgrade insecure requests to HTTPS (temporary fix for mixed content) --}}
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     @if($favicon)
     <link rel="icon" href="{{ asset('storage/' . $favicon) }}" type="image/x-icon">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $favicon) }}">

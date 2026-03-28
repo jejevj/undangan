@@ -268,8 +268,66 @@
   span#progress-value i {
     font-size: 16px;
 	}
+	
+	/* Mobile Menu Styles */
+	.navbar-toggler {
+    display: block;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin-left: auto;
+    order: 3;
+	}
+	
+	.top-bar {
+    flex-wrap: wrap;
+    position: relative;
+	}
+	
 	nav {
     display: none;
+    width: 100%;
+    order: 4;
+    margin-top: 15px;
+	}
+	
+	nav.mobile-menu-open {
+    display: block !important;
+	}
+	
+	nav ul {
+    flex-direction: column;
+    width: 100%;
+	}
+	
+	nav ul li {
+    padding: 0;
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+	}
+	
+	nav ul li a {
+    display: block;
+    padding: 12px 0;
+    width: 100%;
+	}
+	
+	.top-bar a.contact-link {
+    order: 2;
+    font-size: 0;
+    padding: 8px 12px;
+	}
+	
+	.top-bar a.contact-link i {
+    margin: 0;
+	}
+	
+	.top-bar a.contact-link i svg {
+    width: 20px;
+    height: 20px;
 	}
 	.customize-img:before {
     width: 440px;

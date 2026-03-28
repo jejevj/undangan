@@ -19,6 +19,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiftController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\PricingPlanController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\GeneralConfigController;
 
 // Landing Page
@@ -178,6 +179,16 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::patch('pricing-plans/{pricingPlan}/toggle', [PricingPlanController::class, 'toggle'])
         ->name('pricing-plans.toggle')
         ->middleware('can:edit-pricing-plans');
+
+    // Partner Management
+    Route::resource('partners', PartnerController::class)->middleware([
+        'index'   => 'can:view-partners',
+        'create'  => 'can:create-partners',
+        'store'   => 'can:create-partners',
+        'edit'    => 'can:edit-partners',
+        'update'  => 'can:edit-partners',
+        'destroy' => 'can:delete-partners',
+    ]);
 
     // General Config
     Route::get('general-config', [GeneralConfigController::class, 'index'])

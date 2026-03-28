@@ -210,3 +210,35 @@ let calcScrollValue = () => {
 
 window.onscroll = calcScrollValue;
 window.onload = calcScrollValue;
+
+/* Mobile Menu Toggle */
+$(document).ready(function() {
+  $('.navbar-toggler').on('click', function(e) {
+    e.preventDefault();
+    $('nav').toggleClass('mobile-menu-open');
+    
+    // Toggle icon
+    const icon = $(this).find('i');
+    if (icon.hasClass('fa-bars')) {
+      icon.removeClass('fa-bars').addClass('fa-times');
+    } else {
+      icon.removeClass('fa-times').addClass('fa-bars');
+    }
+  });
+  
+  // Close menu when clicking on a link
+  $('nav ul li a').on('click', function() {
+    if ($(window).width() <= 1200) {
+      $('nav').removeClass('mobile-menu-open');
+      $('.navbar-toggler i').removeClass('fa-times').addClass('fa-bars');
+    }
+  });
+  
+  // Close menu when clicking outside
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest('.top-bar').length && $('nav').hasClass('mobile-menu-open')) {
+      $('nav').removeClass('mobile-menu-open');
+      $('.navbar-toggler i').removeClass('fa-times').addClass('fa-bars');
+    }
+  });
+});
