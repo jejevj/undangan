@@ -163,5 +163,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MusicSeeder::class);
         $this->call(InvitationSeeder::class);
         $this->call(PartnerSeeder::class);
+        $this->call(PaymentGatewayConfigSeeder::class);
     }
 }
