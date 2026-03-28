@@ -5,6 +5,7 @@
     <li class="breadcrumb-item"><a href="{{ route('invitations.index') }}">Undangan Saya</a></li>
     <li class="breadcrumb-item active">Pilih Template</li>
 @endsection
+
 @section('content')
 <p class="text-muted mb-4">
     Pilih template yang ingin Anda gunakan untuk undangan Anda.
@@ -32,39 +33,129 @@
     </a>
 </div>
 @endif
-<div class="row">
-    @forelse($templates as $template)
-    <div class="col-xl-4 col-md-6">
-        <div class="card h-100">
-            @if($template->thumbnail)
-                <img src="{{ asset('storage/' . $template->thumbnail) }}" class="card-img-top" style="height:200px;object-fit:cover" alt="">
-            @else
-                <div class="bg-gradient-primary d-flex align-items-center justify-content-center" style="height:200px;background:linear-gradient(135deg,#6f42c1,#e83e8c)">
-                    <span class="text-white fw-bold fs-4">{{ $template->name }}</span>
-                </div>
-            @endif
-            <div class="card-body">
-                <h5 class="card-title">{{ $template->name }}</h5>
-                <p class="text-muted small">{{ $template->description }}</p>
-                <div class="d-flex align-items-center gap-2 mt-2">
-                    <span class="badge badge-{{ $template->type === 'free' ? 'success' : ($template->type === 'premium' ? 'warning' : 'info') }}">
-                        {{ ucfirst($template->type) }}
-                    </span>
-                    <span class="fw-bold text-{{ $template->isFree() ? 'success' : 'dark' }}">
-                        {{ $template->formattedPrice() }}
-                    </span>
-                    <small class="text-muted ms-auto">v{{ $template->version }}</small>
-                </div>
+
+{{-- Filter Section --}}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            {{-- Category Filter --}}
+            <div class="col-md-6">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-folder me-1"></i> Kategori
+                </label>
+                <select class="form-select" id="category-filter">
+                    <option value="all">Semua Kategori</option>
+                    @foreach($categories as $category)
+                    <option value="{{ $category->slug }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
             </div>
-            <div class="card-footer">
-                <a href="{{ route('invitations.create', ['template_id' => $template->id]) }}" class="btn btn-primary w-100">
-                    Gunakan Template Ini
-                </a>
+            
+            {{-- Type Filter --}}
+            <div class="col-md-6">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-tag me-1"></i> Tipe Template
+                </label>
+                <select class="form-select" id="type-filter">
+                    <option value="all">Semua Tipe</option>
+                    <option value="free">Gratis</option>
+                    <option value="premium">Premium</option>
+                </select>
             </div>
         </div>
     </div>
-    @empty
-    <div class="col-12"><div class="card card-body text-center">Belum ada template tersedia.</div></div>
-    @endforelse
 </div>
+
+{{-- Loading Indicator --}}
+<div id="template-loading" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Memuat template...</p>
+</div>
+
+{{-- Template Grid --}}
+<div id="template-grid" class="row g-3">
+    @include('invitations.partials.template-grid', ['templates' => $templates])
+</div>
+
+<style>
+/* Responsive card title height */
+@media (max-width: 576px) {
+    #template-grid .card-title {
+        font-size: 12px !important;
+        min-height: 35px !important;
+    }
+    #template-grid .btn {
+        font-size: 11px !important;
+        padding: 6px !important;
+    }
+    #template-grid .badge {
+        font-size: 9px !important;
+    }
+}
+</style>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    let currentCategory = 'all';
+    let currentType = 'all';
+    
+    // Category filter change handler
+    $('#category-filter').on('change', function() {
+        currentCategory = $(this).val();
+        loadTemplates(currentCategory, currentType);
+    });
+    
+    // Type filter change handler
+    $('#type-filter').on('change', function() {
+        currentType = $(this).val();
+        loadTemplates(currentCategory, currentType);
+    });
+    
+    // Function to load templates via AJAX
+    function loadTemplates(category, type) {
+        // Show loading indicator
+        $('#template-loading').show();
+        $('#template-grid').hide();
+        
+        // AJAX request
+        $.ajax({
+            url: '{{ route("invitations.templates") }}',
+            method: 'GET',
+            data: {
+                category: category,
+                type: type
+            },
+            success: function(response) {
+                // Update template grid
+                $('#template-grid').html(response);
+                
+                // Hide loading, show grid
+                $('#template-loading').hide();
+                $('#template-grid').fadeIn(300);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading templates:', error);
+                
+                // Show error message
+                $('#template-grid').html(
+                    '<div class="col-12">' +
+                    '<div class="alert alert-danger">' +
+                    '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                    'Terjadi kesalahan saat memuat template. Silakan coba lagi.' +
+                    '</div>' +
+                    '</div>'
+                );
+                
+                // Hide loading, show grid
+                $('#template-loading').hide();
+                $('#template-grid').fadeIn(300);
+            }
+        });
+    }
+});
+</script>
+@endpush

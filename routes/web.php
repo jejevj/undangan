@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
@@ -27,6 +28,8 @@ Route::get('/templates', [LandingController::class, 'getTemplates'])->name('land
 // Auth
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
+Route::post('/register', [RegisterController::class, 'register'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Halaman publik undangan (tanpa auth)
@@ -44,6 +47,7 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     // Undangan
     Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
     Route::get('invitations/select-template', [InvitationController::class, 'selectTemplate'])->name('invitations.select-template');
+    Route::get('invitations/templates', [InvitationController::class, 'getTemplates'])->name('invitations.templates');
     Route::get('invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
     Route::post('invitations', [InvitationController::class, 'store'])->name('invitations.store');
     Route::get('invitations/{invitation}/edit', [InvitationController::class, 'edit'])->name('invitations.edit');

@@ -24,7 +24,7 @@ class InvitationController extends Controller
     /**
      * Pilih template sebelum membuat undangan
      */
-    public function selectTemplate()
+    public function selectTemplate(Request $request)
     {
         // Cek limit undangan berdasarkan plan
         $user = auth()->user();
@@ -34,8 +34,41 @@ class InvitationController extends Controller
                 ->with('error', "Batas undangan paket {$plan->name} ({$plan->max_invitations} undangan) sudah tercapai. Upgrade paket untuk membuat lebih banyak undangan.");
         }
 
-        $templates = Template::where('is_active', true)->get();
-        return view('invitations.select-template', compact('templates'));
+        // Get categories for filter
+        $categories = \App\Models\TemplateCategory::where('is_active', true)
+            ->orderBy('order')
+            ->get();
+
+        // Initial templates load
+        $templates = Template::where('is_active', true)
+            ->with('category')
+            ->get();
+
+        return view('invitations.select-template', compact('templates', 'categories'));
+    }
+
+    /**
+     * AJAX endpoint untuk filter template di dashboard
+     */
+    public function getTemplates(Request $request)
+    {
+        $query = Template::where('is_active', true)->with('category');
+
+        // Filter by category
+        if ($request->category && $request->category !== 'all') {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        // Filter by type
+        if ($request->type && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        $templates = $query->get();
+
+        return view('invitations.partials.template-grid', compact('templates'));
     }
 
     /**
