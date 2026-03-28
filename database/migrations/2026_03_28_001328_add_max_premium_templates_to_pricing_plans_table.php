@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pricing_plans', function (Blueprint $table) {
-            $table->integer('max_premium_templates')->default(0)->after('max_invitations')
+            $table->integer('max_premium_templates')->nullable()->default(0)->after('max_invitations')
                 ->comment('Jumlah maksimal template premium yang bisa digunakan. 0 = tidak bisa akses premium, null = unlimited');
         });
     }

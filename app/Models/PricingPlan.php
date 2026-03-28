@@ -9,7 +9,7 @@ class PricingPlan extends Model
 {
     protected $fillable = [
         'slug', 'name', 'price', 'badge_color', 'is_popular',
-        'max_invitations', 'max_gallery_photos', 'max_music_uploads',
+        'max_invitations', 'max_premium_templates', 'max_gallery_photos', 'max_music_uploads',
         'gift_section_included', 'can_delete_music', 'features', 'is_active',
     ];
 
@@ -21,6 +21,7 @@ class PricingPlan extends Model
         'features'               => 'array',
         'price'                  => 'integer',
         'max_invitations'        => 'integer',
+        'max_premium_templates'  => 'integer',
         'max_gallery_photos'     => 'integer',
         'max_music_uploads'      => 'integer',
     ];

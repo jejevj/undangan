@@ -18,6 +18,7 @@ class PricingPlanSeeder extends Seeder
             'badge_color'           => 'secondary',
             'is_popular'            => false,
             'max_invitations'       => 1,
+            'max_premium_templates' => 0,  // Tidak bisa akses premium template
             'max_gallery_photos'    => 2,
             'max_music_uploads'     => 0,
             'gift_section_included' => false,
@@ -25,6 +26,7 @@ class PricingPlanSeeder extends Seeder
             'is_active'             => true,
             'features'              => [
                 '1 undangan digital',
+                'Template gratis saja',
                 '2 foto galeri',
                 'Musik dari library gratis',
                 'Manajemen tamu (maks 40)',
@@ -39,6 +41,7 @@ class PricingPlanSeeder extends Seeder
             'badge_color'           => 'primary',
             'is_popular'            => true,
             'max_invitations'       => 3,
+            'max_premium_templates' => 3,  // Bisa pakai 3 template premium gratis
             'max_gallery_photos'    => 50,
             'max_music_uploads'     => 4,
             'gift_section_included' => true,
@@ -46,6 +49,7 @@ class PricingPlanSeeder extends Seeder
             'is_active'             => true,
             'features'              => [
                 '3 undangan digital',
+                '3 template premium gratis',
                 '50 foto galeri (total)',
                 'Upload 4 lagu sendiri',
                 'Gift section (rekening bank) gratis',
@@ -61,6 +65,7 @@ class PricingPlanSeeder extends Seeder
             'badge_color'           => 'warning',
             'is_popular'            => false,
             'max_invitations'       => 10,
+            'max_premium_templates' => null,   // unlimited premium templates
             'max_gallery_photos'    => null,   // unlimited
             'max_music_uploads'     => null,   // unlimited
             'gift_section_included' => true,
@@ -68,6 +73,7 @@ class PricingPlanSeeder extends Seeder
             'is_active'             => true,
             'features'              => [
                 '10 undangan digital',
+                'Semua template premium unlimited',
                 'Foto galeri unlimited',
                 'Upload lagu unlimited',
                 'Gift section gratis',

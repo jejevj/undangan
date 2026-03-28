@@ -98,4 +98,47 @@ class User extends Authenticatable
         $plan = $this->activePlan();
         return max(0, $plan->max_invitations - $this->invitationCount());
     }
+
+    /** Jumlah undangan dengan template premium yang sudah dibuat */
+    public function premiumInvitationCount(): int
+    {
+        return $this->invitations()
+            ->whereHas('template', function($q) {
+                $q->where('type', 'premium');
+            })
+            ->count();
+    }
+
+    /** Apakah masih bisa menggunakan template premium */
+    public function canUsePremiumTemplate(): bool
+    {
+        if ($this->isAdmin()) return true;
+        
+        $plan = $this->activePlan();
+        
+        // Jika max_premium_templates = 0, tidak bisa akses premium
+        if ($plan->max_premium_templates === 0) return false;
+        
+        // Jika null, unlimited
+        if ($plan->max_premium_templates === null) return true;
+        
+        // Cek apakah masih ada slot
+        return $this->premiumInvitationCount() < $plan->max_premium_templates;
+    }
+
+    /** Sisa slot template premium */
+    public function remainingPremiumTemplates(): int|null
+    {
+        if ($this->isAdmin()) return null;
+        
+        $plan = $this->activePlan();
+        
+        // Jika 0, tidak bisa akses
+        if ($plan->max_premium_templates === 0) return 0;
+        
+        // Jika null, unlimited
+        if ($plan->max_premium_templates === null) return null;
+        
+        return max(0, $plan->max_premium_templates - $this->premiumInvitationCount());
+    }
 }

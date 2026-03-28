@@ -547,7 +547,6 @@
           <p>{{ \App\Models\GeneralConfig::get('hero_subtitle', 'Mulai Sekarang Gratis!') }}</p>
           @guest
           <form role="form" class="get-subscribee" action="{{ route('login') }}" method="get">
-            <input type="email" name="email" placeholder="Masukkan email Anda" required="">
             <button type="submit" class="btn"><span>Mulai Gratis</span></button>
           </form>
           @else
