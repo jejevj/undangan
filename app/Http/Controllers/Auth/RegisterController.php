@@ -43,8 +43,13 @@ class RegisterController extends Controller
             UserSubscription::create([
                 'user_id' => $user->id,
                 'pricing_plan_id' => $freePlan->id,
+                'order_number' => UserSubscription::generateOrderNumber(),
+                'amount' => 0,
                 'status' => 'active',
-                'started_at' => now(),
+                'payment_method' => 'free',
+                'starts_at' => now(),
+                'expires_at' => null,
+                'paid_at' => now(),
             ]);
         }
 
