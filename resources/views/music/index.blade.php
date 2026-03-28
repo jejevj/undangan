@@ -14,11 +14,18 @@
     @endif
 </p>
 
-<div class="d-flex gap-2 mb-4 flex-wrap">
-    @php $activePlan = auth()->user()->activePlan(); @endphp
+<div class="d-flex gap-2 mb-4 flex-wrap align-items-center">
+    @php 
+        $activePlan = auth()->user()->activePlan();
+        $user = auth()->user();
+        $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
+        $canUpload = $user->isAdmin() 
+                  || $activePlan->max_music_uploads === null 
+                  || ($activePlan->max_music_uploads > 0 && $uploadedCount < $activePlan->max_music_uploads);
+    @endphp
     
     @if($hasPremiumAccess)
-        <div class="alert alert-success py-2 px-3 mb-0 flex-fill">
+        <div class="alert alert-success py-2 px-3 mb-0">
             <i class="fa fa-crown"></i>
             Paket <strong>{{ $activePlan->name }}</strong> — Semua lagu premium gratis!
         </div>
@@ -30,6 +37,25 @@
         <a href="{{ route('subscription.index') }}" class="btn btn-warning btn-sm">
             <i class="fa fa-crown"></i> Upgrade untuk Akses Premium
         </a>
+    @endif
+    
+    @if($canUpload)
+        <a href="{{ route('music.upload') }}" class="btn btn-primary btn-sm ms-auto">
+            <i class="fa fa-upload"></i> Upload Lagu
+            @if($activePlan->max_music_uploads !== null && $activePlan->max_music_uploads > 0)
+                ({{ $uploadedCount }}/{{ $activePlan->max_music_uploads }})
+            @endif
+        </a>
+    @elseif($activePlan->max_music_uploads === 0)
+        <div class="alert alert-warning py-2 px-3 mb-0 ms-auto">
+            <i class="fa fa-info-circle"></i>
+            Upload lagu tidak tersedia di paket Free
+        </div>
+    @else
+        <div class="alert alert-warning py-2 px-3 mb-0 ms-auto">
+            <i class="fa fa-info-circle"></i>
+            Limit upload tercapai ({{ $uploadedCount }}/{{ $activePlan->max_music_uploads }})
+        </div>
     @endif
 </div>
 

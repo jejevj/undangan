@@ -51,38 +51,50 @@ class MusicController extends Controller
 
     /**
      * Form upload lagu oleh user
-     * Menampilkan informasi biaya upload
-     * HANYA untuk user dengan paket FREE
+     * Menampilkan informasi biaya upload (jika ada)
      */
     public function uploadForm()
     {
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
-        // Cek apakah user paket free
-        if ($activePlan->slug !== 'free') {
+        // Cek apakah user bisa upload
+        if ($activePlan->max_music_uploads === 0) {
             return redirect()->route('music.index')
-                ->with('error', 'Fitur upload musik hanya tersedia untuk paket Free. Paket ' . $activePlan->name . ' sudah termasuk akses musik premium.');
+                ->with('error', 'Fitur upload musik tidak tersedia di paket ' . $activePlan->name . '. Upgrade ke paket Basic atau Pro untuk upload lagu.');
         }
         
-        $uploadFee = 5000; // Rp 5.000 per upload
-        return view('music.upload', compact('uploadFee'));
+        // Cek limit upload
+        $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
+        if ($activePlan->max_music_uploads !== null && $uploadedCount >= $activePlan->max_music_uploads) {
+            return redirect()->route('music.index')
+                ->with('error', 'Limit upload lagu tercapai (' . $uploadedCount . '/' . $activePlan->max_music_uploads . '). Upgrade ke paket Pro untuk upload unlimited.');
+        }
+        
+        $uploadFee = 0; // Gratis untuk Basic/Pro
+        return view('music.upload', compact('uploadFee', 'activePlan', 'uploadedCount'));
     }
 
     /**
      * Proses upload lagu oleh user
-     * Step 1: Upload file temporary dan buat order pending
-     * HANYA untuk user dengan paket FREE
+     * Step 1: Upload file dan langsung buat record Music (gratis untuk Basic/Pro)
      */
     public function userUpload(Request $request)
     {
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
-        // Cek apakah user paket free
-        if ($activePlan->slug !== 'free') {
+        // Cek apakah user bisa upload
+        if ($activePlan->max_music_uploads === 0) {
             return redirect()->route('music.index')
-                ->with('error', 'Fitur upload musik hanya tersedia untuk paket Free.');
+                ->with('error', 'Fitur upload musik tidak tersedia di paket ' . $activePlan->name);
+        }
+        
+        // Cek limit upload
+        $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
+        if ($activePlan->max_music_uploads !== null && $uploadedCount >= $activePlan->max_music_uploads) {
+            return redirect()->route('music.index')
+                ->with('error', 'Limit upload lagu tercapai (' . $uploadedCount . '/' . $activePlan->max_music_uploads . ')');
         }
         
         $request->validate([
@@ -92,24 +104,24 @@ class MusicController extends Controller
         ]);
 
         $file     = $request->file('file');
-        $filename = \Illuminate\Support\Str::slug($request->title) . '-temp-' . auth()->id() . '-' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = \Illuminate\Support\Str::slug($request->title) . '-' . auth()->id() . '-' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Simpan ke temporary folder
-        $tempPath = $file->storeAs('music-uploads-temp', $filename, 'public');
+        // Simpan langsung ke permanent folder (gratis untuk Basic/Pro)
+        $permanentPath = $file->storeAs('music-uploads', $filename, 'public');
 
-        // Buat order pending
-        $order = MusicUploadOrder::create([
-            'user_id'        => auth()->id(),
-            'order_number'   => MusicUploadOrder::generateOrderNumber(),
-            'amount'         => 5000,
-            'status'         => 'pending',
-            'temp_title'     => $request->title,
-            'temp_artist'    => $request->artist,
-            'temp_file_path' => $tempPath,
+        // Buat record Music langsung
+        $music = Music::create([
+            'title'       => $request->title,
+            'artist'      => $request->artist,
+            'file_path'   => $permanentPath,
+            'type'        => 'free', // Lagu upload user selalu free type
+            'price'       => 0,
+            'is_active'   => true,
+            'uploaded_by' => auth()->id(),
         ]);
 
-        return redirect()->route('music.upload.checkout', $order)
-            ->with('info', 'Silakan lakukan pembayaran untuk menyelesaikan upload.');
+        return redirect()->route('music.index')
+            ->with('success', "Lagu \"{$music->title}\" berhasil diupload dan sudah tersedia di library Anda!");
     }
 
     /**
