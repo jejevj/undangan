@@ -31,7 +31,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'paid', 'expired', 'cancelled'])->default('pending')->change();
             
             // Drop old columns that are no longer needed
-            $table->dropColumn(['temp_title', 'temp_artist', 'temp_file_path', 'music_id']);
+            // $table->dropColumn(['temp_title', 'temp_artist', 'temp_file_path', 'music_id']);
             
             // Add foreign key for payment_channel_id
             $table->foreign('payment_channel_id')->references('id')->on('payment_channels')->onDelete('set null');
