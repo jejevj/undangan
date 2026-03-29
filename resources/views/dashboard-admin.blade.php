@@ -31,7 +31,7 @@
 <div class="row">
     {{-- Total Users --}}
     <div class="col-xl-3 col-lg-6 col-md-6">
-        <div class="stat-card bg-primary text-white">
+        <div class="stat-card text-white" style="background: linear-gradient(135deg, #12a575 0%, #0d8a5f 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="text-white mb-1">Total Users</h6>
@@ -47,7 +47,7 @@
 
     {{-- Active Subscriptions --}}
     <div class="col-xl-3 col-lg-6 col-md-6">
-        <div class="stat-card bg-success text-white">
+        <div class="stat-card text-white" style="background: linear-gradient(135deg, #20c997 0%, #17a589 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="text-white mb-1">Subscription Aktif</h6>
@@ -63,7 +63,7 @@
 
     {{-- Total Invitations --}}
     <div class="col-xl-3 col-lg-6 col-md-6">
-        <div class="stat-card bg-info text-white">
+        <div class="stat-card text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="text-white mb-1">Total Undangan</h6>
@@ -79,7 +79,7 @@
 
     {{-- Total Revenue --}}
     <div class="col-xl-3 col-lg-6 col-md-6">
-        <div class="stat-card bg-warning text-white">
+        <div class="stat-card text-white" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="text-white mb-1">Total Revenue</h6>
@@ -195,7 +195,7 @@
                                     <div class="font-weight-bold">{{ $sub->user->name }}</div>
                                     <small class="text-muted">{{ $sub->user->email }}</small>
                                 </td>
-                                <td><span class="badge badge-primary">{{ $sub->plan->name }}</span></td>
+                                <td><span class="badge" style="background-color: #12a575; color: white;">{{ $sub->plan->name }}</span></td>
                                 <td>Rp {{ number_format($sub->amount, 0, ',', '.') }}</td>
                                 <td><small>{{ $sub->paid_at?->format('d M Y H:i') }}</small></td>
                             </tr>
@@ -229,10 +229,11 @@ new Chart(revenueCtx, {
         datasets: [{
             label: 'Revenue (Rp)',
             data: {!! json_encode($monthlyRevenue->values()) !!},
-            borderColor: 'rgb(255, 193, 7)',
+            borderColor: '#ffc107',
             backgroundColor: 'rgba(255, 193, 7, 0.1)',
             tension: 0.4,
-            fill: true
+            fill: true,
+            borderWidth: 3
         }]
     },
     options: {
@@ -266,10 +267,12 @@ new Chart(paymentMethodCtx, {
         datasets: [{
             data: [{{ $paymentMethods['va'] }}, {{ $paymentMethods['ewallet'] }}, {{ $paymentMethods['qris'] }}],
             backgroundColor: [
-                'rgb(13, 110, 253)',
-                'rgb(25, 135, 84)',
-                'rgb(220, 53, 69)'
-            ]
+                '#12a575',
+                '#20c997',
+                '#0dcaf0'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
         }]
     },
     options: {
@@ -292,9 +295,10 @@ new Chart(userGrowthCtx, {
         datasets: [{
             label: 'New Users',
             data: {!! json_encode($userGrowth->values()) !!},
-            backgroundColor: 'rgba(13, 110, 253, 0.8)',
-            borderColor: 'rgb(13, 110, 253)',
-            borderWidth: 1
+            backgroundColor: 'rgba(18, 165, 117, 0.8)',
+            borderColor: '#12a575',
+            borderWidth: 2,
+            borderRadius: 6
         }]
     },
     options: {
@@ -325,12 +329,14 @@ new Chart(subscriptionPlanCtx, {
         datasets: [{
             data: {!! json_encode($subscriptionsByPlan->values()) !!},
             backgroundColor: [
-                'rgb(13, 110, 253)',
-                'rgb(25, 135, 84)',
-                'rgb(255, 193, 7)',
-                'rgb(220, 53, 69)',
-                'rgb(13, 202, 240)'
-            ]
+                '#12a575',
+                '#20c997',
+                '#0dcaf0',
+                '#ffc107',
+                '#17a2b8'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
         }]
     },
     options: {
@@ -355,9 +361,10 @@ new Chart(vaChannelCtx, {
         datasets: [{
             label: 'Transaksi',
             data: {!! json_encode($vaChannels->values()) !!},
-            backgroundColor: 'rgba(25, 135, 84, 0.8)',
-            borderColor: 'rgb(25, 135, 84)',
-            borderWidth: 1
+            backgroundColor: 'rgba(32, 201, 151, 0.8)',
+            borderColor: '#20c997',
+            borderWidth: 2,
+            borderRadius: 6
         }]
     },
     options: {

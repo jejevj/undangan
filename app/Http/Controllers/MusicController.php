@@ -58,21 +58,49 @@ class MusicController extends Controller
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
-        // Cek apakah user bisa upload
-        if ($activePlan->max_music_uploads === 0) {
-            return redirect()->route('music.index')
-                ->with('error', 'Fitur upload musik tidak tersedia di paket ' . $activePlan->name . '. Upgrade ke paket Basic atau Pro untuk upload lagu.');
-        }
-        
-        // Cek limit upload
+        // Hitung jumlah musik yang sudah diupload
         $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
-        if ($activePlan->max_music_uploads !== null && $uploadedCount >= $activePlan->max_music_uploads) {
-            return redirect()->route('music.index')
-                ->with('error', 'Limit upload lagu tercapai (' . $uploadedCount . '/' . $activePlan->max_music_uploads . '). Upgrade ke paket Pro untuk upload unlimited.');
+        
+        // Hitung jumlah slot berbayar yang sudah dibeli dan belum digunakan
+        $paidSlots = \App\Models\MusicUploadOrder::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('qty');
+        
+        $usedPaidSlots = \App\Models\Music::where('uploaded_by', $user->id)
+            ->where('is_paid_upload', true)
+            ->count();
+        
+        $remainingPaidSlots = $paidSlots - $usedPaidSlots;
+        
+        // Cek apakah user bisa upload gratis (dari paket)
+        $canUploadFree = false;
+        $remainingFreeSlots = 0;
+        
+        if ($activePlan->max_music_uploads === null) {
+            // Unlimited
+            $canUploadFree = true;
+            $remainingFreeSlots = null;
+        } elseif ($activePlan->max_music_uploads > 0) {
+            // Ada limit
+            $remainingFreeSlots = $activePlan->max_music_uploads - $uploadedCount;
+            $canUploadFree = $remainingFreeSlots > 0;
         }
         
-        $uploadFee = 0; // Gratis untuk Basic/Pro
-        return view('music.upload', compact('uploadFee', 'activePlan', 'uploadedCount'));
+        // Jika tidak bisa upload gratis dan tidak punya slot berbayar, arahkan ke beli slot
+        if (!$canUploadFree && $remainingPaidSlots <= 0) {
+            return redirect()->route('music.slots.buy')
+                ->with('info', 'Anda perlu membeli slot upload musik. Harga: Rp 10.000 per slot.');
+        }
+        
+        $uploadFee = 0; // Gratis jika ada slot
+        return view('music.upload', compact(
+            'uploadFee', 
+            'activePlan', 
+            'uploadedCount',
+            'canUploadFree',
+            'remainingFreeSlots',
+            'remainingPaidSlots'
+        ));
     }
 
     /**
@@ -84,17 +112,41 @@ class MusicController extends Controller
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
-        // Cek apakah user bisa upload
-        if ($activePlan->max_music_uploads === 0) {
-            return redirect()->route('music.index')
-                ->with('error', 'Fitur upload musik tidak tersedia di paket ' . $activePlan->name);
+        // Hitung jumlah musik yang sudah diupload
+        $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
+        
+        // Hitung jumlah slot berbayar yang sudah dibeli dan belum digunakan
+        $paidSlots = \App\Models\MusicUploadOrder::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('qty');
+        
+        $usedPaidSlots = \App\Models\Music::where('uploaded_by', $user->id)
+            ->where('is_paid_upload', true)
+            ->count();
+        
+        $remainingPaidSlots = $paidSlots - $usedPaidSlots;
+        
+        // Cek apakah user bisa upload gratis (dari paket)
+        $canUploadFree = false;
+        $remainingFreeSlots = 0;
+        
+        if ($activePlan->max_music_uploads === null) {
+            // Unlimited
+            $canUploadFree = true;
+            $remainingFreeSlots = null;
+        } elseif ($activePlan->max_music_uploads > 0) {
+            // Ada limit
+            $freeUploadsUsed = \App\Models\Music::where('uploaded_by', $user->id)
+                ->where('is_paid_upload', false)
+                ->count();
+            $remainingFreeSlots = $activePlan->max_music_uploads - $freeUploadsUsed;
+            $canUploadFree = $remainingFreeSlots > 0;
         }
         
-        // Cek limit upload
-        $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
-        if ($activePlan->max_music_uploads !== null && $uploadedCount >= $activePlan->max_music_uploads) {
-            return redirect()->route('music.index')
-                ->with('error', 'Limit upload lagu tercapai (' . $uploadedCount . '/' . $activePlan->max_music_uploads . ')');
+        // Jika tidak bisa upload gratis dan tidak punya slot berbayar, redirect ke beli slot
+        if (!$canUploadFree && $remainingPaidSlots <= 0) {
+            return redirect()->route('music.upload.buy')
+                ->with('error', 'Anda tidak memiliki slot upload tersedia. Silakan beli slot upload musik.');
         }
         
         $request->validate([
@@ -106,22 +158,27 @@ class MusicController extends Controller
         $file     = $request->file('file');
         $filename = \Illuminate\Support\Str::slug($request->title) . '-' . auth()->id() . '-' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Simpan langsung ke permanent folder (gratis untuk Basic/Pro)
+        // Simpan langsung ke permanent folder
         $permanentPath = $file->storeAs('music-uploads', $filename, 'public');
+
+        // Tentukan apakah ini paid upload atau free upload
+        $isPaidUpload = !$canUploadFree && $remainingPaidSlots > 0;
 
         // Buat record Music langsung
         $music = Music::create([
-            'title'       => $request->title,
-            'artist'      => $request->artist,
-            'file_path'   => $permanentPath,
-            'type'        => 'free', // Lagu upload user selalu free type
-            'price'       => 0,
-            'is_active'   => true,
-            'uploaded_by' => auth()->id(),
+            'title'          => $request->title,
+            'artist'         => $request->artist,
+            'file_path'      => $permanentPath,
+            'type'           => 'free', // Lagu upload user selalu free type
+            'price'          => 0,
+            'is_active'      => true,
+            'uploaded_by'    => auth()->id(),
+            'is_paid_upload' => $isPaidUpload,
         ]);
 
+        $slotType = $isPaidUpload ? 'berbayar' : 'gratis dari paket';
         return redirect()->route('music.index')
-            ->with('success', "Lagu \"{$music->title}\" berhasil diupload dan sudah tersedia di library Anda!");
+            ->with('success', "Lagu \"{$music->title}\" berhasil diupload menggunakan slot {$slotType}!");
     }
 
     /**

@@ -10,8 +10,12 @@ class PaymentChannel extends Model
         'type',
         'code',
         'name',
+        'category',
         'icon',
+        'logo_url',
         'description',
+        'fee_type',
+        'fee_amount',
         'bin',
         'bin_length',
         'bin_notes',
@@ -125,5 +129,19 @@ class PaymentChannel extends Model
         }
 
         return $this->last_checked_at->diffInHours(now()) >= 1;
+    }
+
+    /**
+     * Calculate admin fee based on subtotal
+     */
+    public function calculateFee(float $subtotal): float
+    {
+        if ($this->fee_type === 'fixed') {
+            return (float) $this->fee_amount;
+        } elseif ($this->fee_type === 'percentage') {
+            return ceil($subtotal * $this->fee_amount / 100);
+        }
+        
+        return 0;
     }
 }

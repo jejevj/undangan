@@ -384,10 +384,33 @@ class DokuWebhookController extends Controller
      */
     protected function activateGalleryUpgrade($payment)
     {
-        // TODO: Implement gallery upgrade activation
-        Log::channel('va')->info('Gallery upgrade payment received', [
-            'reference_id' => $payment->reference_id,
+        $order = \App\Models\GalleryOrder::find($payment->reference_id);
+        
+        if (!$order) {
+            Log::channel('va')->error('Gallery order not found', [
+                'reference_id' => $payment->reference_id,
+            ]);
+            return;
+        }
+
+        // Mark order as paid
+        $order->update([
+            'status' => 'paid',
+            'paid_at' => now(),
         ]);
+
+        // Add purchased slots to user's gallery slots
+        $userSlots = $order->user->getGallerySlots();
+        $userSlots->addPurchasedSlots($order->qty);
+
+        Log::channel('va')->info('Gallery slots added via webhook', [
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'qty' => $order->qty,
+            'total_slots' => $userSlots->totalSlots(),
+        ]);
+
+        // TODO: Send email notification to user
     }
 
     /**
@@ -395,10 +418,28 @@ class DokuWebhookController extends Controller
      */
     protected function activateMusicUpload($payment)
     {
-        // TODO: Implement music upload activation
-        Log::channel('va')->info('Music upload payment received', [
-            'reference_id' => $payment->reference_id,
+        $order = \App\Models\MusicUploadOrder::find($payment->reference_id);
+        
+        if (!$order) {
+            Log::channel('va')->error('Music upload order not found', [
+                'reference_id' => $payment->reference_id,
+            ]);
+            return;
+        }
+
+        // Mark order as paid
+        $order->update([
+            'status' => 'paid',
+            'paid_at' => now(),
         ]);
+
+        Log::channel('va')->info('Music upload slots activated via webhook', [
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'qty' => $order->qty,
+        ]);
+
+        // TODO: Send email notification to user
     }
 
     /**

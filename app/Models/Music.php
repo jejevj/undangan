@@ -13,7 +13,7 @@ class Music extends Model
 
     protected $fillable = [
         'title', 'artist', 'file_path', 'duration',
-        'type', 'price', 'cover', 'is_active', 'uploaded_by',
+        'type', 'price', 'cover', 'is_active', 'uploaded_by', 'is_paid_upload',
     ];
 
     protected $casts = [

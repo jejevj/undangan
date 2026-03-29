@@ -148,7 +148,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        foreach (TemplateFieldPreset::weddingStandard() as $field) {
+        foreach (TemplateFieldPreset::wedding() as $field) {
             $template->fields()->firstOrCreate(
                 ['key' => $field['key']],
                 array_merge($field, ['template_id' => $template->id])
@@ -163,6 +163,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MusicSeeder::class);
         $this->call(InvitationSeeder::class);
         $this->call(PartnerSeeder::class);
-        $this->call(PaymentGatewayConfigSeeder::class);
+        // $this->call(PaymentGatewayConfigSeeder::class); // Skip - requires manual configuration
     }
 }

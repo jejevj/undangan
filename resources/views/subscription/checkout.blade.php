@@ -126,6 +126,7 @@
                                     <i class="fa fa-mobile"></i> E-Wallet
                                 </button>
                             </li>
+                            @if(isset($qrisEnabled) && $qrisEnabled)
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $hasActiveQris ? 'active' : '' }} {{ $hasAnyActivePayment && !$hasActiveQris ? 'disabled' : '' }}" 
                                         id="qris-tab" 
@@ -137,6 +138,13 @@
                                     <i class="fa fa-qrcode"></i> QRIS
                                 </button>
                             </li>
+                            @else
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" type="button" disabled>
+                                    <i class="fa fa-qrcode"></i> QRIS (Belum Aktif)
+                                </button>
+                            </li>
+                            @endif
                         </ul>
 
                         <div class="tab-content">

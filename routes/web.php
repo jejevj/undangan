@@ -16,6 +16,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\MusicController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\GalleryCheckoutController;
 use App\Http\Controllers\GiftController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\PricingPlanController;
@@ -77,6 +78,15 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::get('invitations/{invitation}/preview', [InvitationController::class, 'preview'])->name('invitations.preview');
     Route::post('invitations/{invitation}/publish', [InvitationController::class, 'publish'])->name('invitations.publish');
     Route::post('invitations/{invitation}/unpublish', [InvitationController::class, 'unpublish'])->name('invitations.unpublish');
+    
+    // Live Edit API
+    Route::post('api/invitations/{invitation}/live-edit', [\App\Http\Controllers\Api\LiveEditController::class, 'updateField'])->name('api.invitations.live-edit');
+    Route::get('api/invitations/{invitation}/live-edit/{fieldKey}', [\App\Http\Controllers\Api\LiveEditController::class, 'getField'])->name('api.invitations.live-edit.get');
+    Route::get('api/invitations/{invitation}/live-edit-fields', [\App\Http\Controllers\Api\LiveEditController::class, 'getAllFields'])->name('api.invitations.live-edit.fields');
+    Route::get('api/invitations/{invitation}/live-edit-photos', [\App\Http\Controllers\Api\LiveEditController::class, 'getUserPhotos'])->name('api.invitations.live-edit.photos');
+    Route::get('api/invitations/{invitation}/live-edit-music', [\App\Http\Controllers\Api\LiveEditController::class, 'getUserMusic'])->name('api.invitations.live-edit.music');
+    Route::get('api/invitations/{invitation}/live-edit-gallery', [\App\Http\Controllers\Api\LiveEditController::class, 'getGalleryPhotos'])->name('api.invitations.live-edit.gallery');
+    Route::post('api/invitations/{invitation}/live-edit-gallery', [\App\Http\Controllers\Api\LiveEditController::class, 'updateGallerySelection'])->name('api.invitations.live-edit.gallery.update');
 
     // Guest Management (nested under invitation)
     Route::get('invitations/{invitation}/guests', [GuestController::class, 'index'])->name('invitations.guests.index');
@@ -92,9 +102,23 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::delete('invitations/{invitation}/gift/{account}', [GiftController::class, 'destroy'])->name('invitations.gift.destroy');
     Route::get('invitations/{invitation}/gift/buy', [GiftController::class, 'buyFeature'])->name('invitations.gift.buy');
     Route::post('feature-orders/{order}/pay', [GiftController::class, 'simulatePay'])->name('gift.feature.pay');
+    // Gallery Checkout (User-Level, not per invitation)
+    Route::get('gallery/buy', [GalleryCheckoutController::class, 'selectQuantity'])->name('gallery.select-quantity');
+    Route::get('gallery/checkout', [GalleryCheckoutController::class, 'checkout'])->name('gallery.checkout');
+    Route::post('gallery-orders/{order}/create-va', [GalleryCheckoutController::class, 'createVA'])->name('gallery.create-va');
+    Route::post('gallery-orders/{order}/create-qris', [GalleryCheckoutController::class, 'createQris'])->name('gallery.create-qris');
+    Route::post('gallery/process-payment', [GalleryCheckoutController::class, 'processPayment'])->name('gallery.process-payment');
+    Route::get('gallery-orders/{order}/payment', [GalleryCheckoutController::class, 'payment'])->name('gallery.payment');
+    Route::get('gallery-orders/{order}/check-status', [GalleryCheckoutController::class, 'checkStatus'])->name('gallery.check-status');
+    
+    // Gallery Management (per invitation)
     Route::get('invitations/{invitation}/gallery', [GalleryController::class, 'index'])->name('invitations.gallery.index');
     Route::post('invitations/{invitation}/gallery', [GalleryController::class, 'store'])->name('invitations.gallery.store');
     Route::delete('invitations/{invitation}/gallery/{photo}', [GalleryController::class, 'destroy'])->name('invitations.gallery.destroy');
+    Route::post('invitations/{invitation}/gallery/select', [GalleryController::class, 'selectPhotos'])->name('invitations.gallery.select');
+    Route::post('invitations/{invitation}/gallery/update-order', [GalleryController::class, 'updateOrder'])->name('invitations.gallery.update-order');
+    
+    // Old Gallery Routes (Keep for backward compatibility)
     Route::get('invitations/{invitation}/gallery/buy-slots', [GalleryController::class, 'buySlots'])->name('invitations.gallery.buy-slots');
     Route::post('invitations/{invitation}/gallery/buy-slots', [GalleryController::class, 'buySlots'])->name('invitations.gallery.buy-slots.post');
     Route::post('gallery-orders/{order}/pay', [GalleryController::class, 'simulatePay'])->name('gallery.pay');
@@ -103,9 +127,18 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::get('music', [MusicController::class, 'index'])->name('music.index')->middleware('can:view-music');
     Route::get('music/{music}/buy', [MusicController::class, 'buy'])->name('music.buy')->middleware('can:view-music');
     Route::post('music/orders/{order}/pay', [MusicController::class, 'simulatePay'])->name('music.pay')->middleware('can:view-music');
+    
+    // Music Upload Slot Purchase
+    Route::get('music-slots/buy', [\App\Http\Controllers\MusicUploadCheckoutController::class, 'selectQuantity'])->name('music.slots.buy');
+    Route::get('music-slots/checkout', [\App\Http\Controllers\MusicUploadCheckoutController::class, 'checkout'])->name('music.slots.checkout');
+    Route::post('music-upload-orders/{order}/create-va', [\App\Http\Controllers\MusicUploadCheckoutController::class, 'createVA'])->name('music.slots.create-va');
+    Route::post('music-upload-orders/{order}/create-qris', [\App\Http\Controllers\MusicUploadCheckoutController::class, 'createQris'])->name('music.slots.create-qris');
+    Route::get('music-upload-orders/{order}/check-status', [\App\Http\Controllers\MusicUploadCheckoutController::class, 'checkStatus'])->name('music.slots.check-status');
+    
+    // Music Upload Form
     Route::get('music/upload', [MusicController::class, 'uploadForm'])->name('music.upload')->middleware('can:upload-music');
     Route::post('music/upload', [MusicController::class, 'userUpload'])->name('music.upload.store')->middleware('can:upload-music');
-    Route::get('music/upload/{order}/checkout', [MusicController::class, 'uploadCheckout'])->name('music.upload.checkout')->middleware('can:upload-music');
+    Route::get('music/upload/{order}/checkout', [MusicController::class, 'uploadCheckout'])->name('music.upload.checkout.old')->middleware('can:upload-music');
     Route::post('music/upload/{order}/pay', [MusicController::class, 'uploadPay'])->name('music.upload.pay')->middleware('can:upload-music');
 
     // Music Admin

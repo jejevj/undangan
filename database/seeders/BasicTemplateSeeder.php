@@ -28,8 +28,8 @@ class BasicTemplateSeeder extends Seeder
             ]
         );
 
-        // Gunakan preset sederhana (12 field inti)
-        foreach (TemplateFieldPreset::weddingSimple() as $field) {
+        // Gunakan preset wedding (24 field)
+        foreach (TemplateFieldPreset::wedding() as $field) {
             $template->fields()->firstOrCreate(
                 ['key' => $field['key']],
                 array_merge($field, ['template_id' => $template->id])

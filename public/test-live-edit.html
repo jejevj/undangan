@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Test Live Edit</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        h1 { color: #333; }
+        .editable-section { margin: 20px 0; padding: 20px; border: 2px dashed #ccc; }
+    </style>
+</head>
+<body data-invitation-id="6" data-is-owner="true">
+    <h1>Test Live Edit System</h1>
+    
+    <div class="editable-section">
+        <h2 data-editable data-field-key="test_title" data-field-type="text" data-field-label="Test Title">
+            Click to Edit This Title
+        </h2>
+        <p data-editable data-field-key="test_description" data-field-type="textarea" data-field-label="Test Description">
+            Click to edit this description. This is a test paragraph.
+        </p>
+    </div>
+    
+    <div id="console-output" style="margin-top: 40px; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+        <h3>Console Output:</h3>
+        <pre id="log" style="white-space: pre-wrap;"></pre>
+    </div>
+    
+    <script>
+        // Capture console.log
+        const originalLog = console.log;
+        const logElement = document.getElementById('log');
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logElement.textContent += args.join(' ') + '\n';
+        };
+        
+        console.log('Test page loaded');
+        console.log('Body data-invitation-id:', document.body.getAttribute('data-invitation-id'));
+        console.log('Body data-is-owner:', document.body.getAttribute('data-is-owner'));
+    </script>
+    
+    <script src="/assets/js/live-edit.js"></script>
+</body>
+</html>

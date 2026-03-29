@@ -8,13 +8,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MusicUploadOrder extends Model
 {
     protected $fillable = [
-        'user_id', 'order_number', 'amount', 'status', 'payment_method',
-        'paid_at', 'temp_title', 'temp_artist', 'temp_file_path', 'music_id',
+        'order_number',
+        'user_id',
+        'qty',
+        'amount',
+        'price_per_slot',
+        'admin_fee',
+        'status',
+        'payment_method',
+        'payment_channel_id',
+        'va_number',
+        'payment_url',
+        'qr_string',
+        'qr_url',
+        'paid_at',
+        'expired_at',
     ];
 
     protected $casts = [
         'paid_at' => 'datetime',
-        'amount'  => 'integer',
+        'expired_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -22,9 +35,9 @@ class MusicUploadOrder extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function music(): BelongsTo
+    public function paymentChannel(): BelongsTo
     {
-        return $this->belongsTo(Music::class);
+        return $this->belongsTo(PaymentChannel::class);
     }
 
     public function isPaid(): bool
@@ -32,18 +45,8 @@ class MusicUploadOrder extends Model
         return $this->status === 'paid';
     }
 
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function formattedAmount(): string
-    {
-        return 'Rp ' . number_format($this->amount, 0, ',', '.');
-    }
-
     public static function generateOrderNumber(): string
     {
-        return 'MUP-' . strtoupper(uniqid());
+        return 'MUSIC-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
     }
 }

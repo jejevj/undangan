@@ -52,6 +52,44 @@ class User extends Authenticatable
     {
         return $this->hasMany(Invitation::class);
     }
+
+    public function gallerySlots(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(UserGallerySlot::class);
+    }
+
+    /**
+     * User's photo pool (all uploaded photos)
+     */
+    public function galleryPhotos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserGalleryPhoto::class);
+    }
+
+    /** Get or create gallery slots for user */
+    public function getGallerySlots(): UserGallerySlot
+    {
+        return UserGallerySlot::getOrCreateForUser($this);
+    }
+
+    /** Total slot gallery yang dimiliki */
+    public function totalGallerySlots(): int
+    {
+        return $this->getGallerySlots()->totalSlots();
+    }
+
+    /** Slot gallery yang sudah terpakai */
+    public function usedGallerySlots(): int
+    {
+        return $this->galleryPhotos()->count();
+    }
+
+    /** Slot gallery yang tersisa */
+    public function remainingGallerySlots(): int
+    {
+        return $this->getGallerySlots()->remainingSlots();
+    }
+
     /** Subscription aktif saat ini */
     public function activeSubscription(): ?UserSubscription
     {

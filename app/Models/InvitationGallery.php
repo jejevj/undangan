@@ -9,17 +9,23 @@ class InvitationGallery extends Model
 {
     protected $table = 'invitation_gallery';
 
-    protected $fillable = ['invitation_id', 'path', 'caption', 'order', 'is_paid'];
-
-    protected $casts = ['is_paid' => 'boolean'];
+    protected $fillable = ['invitation_id', 'photo_id', 'order'];
 
     public function invitation(): BelongsTo
     {
         return $this->belongsTo(Invitation::class);
     }
 
+    public function photo(): BelongsTo
+    {
+        return $this->belongsTo(UserGalleryPhoto::class, 'photo_id');
+    }
+
+    /**
+     * Get photo URL (shortcut)
+     */
     public function url(): string
     {
-        return asset('storage/' . $this->path);
+        return $this->photo ? $this->photo->url : '';
     }
 }

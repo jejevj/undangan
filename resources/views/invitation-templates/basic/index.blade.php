@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $invitation->title }}</title>
     
     {{-- SEO Meta Tags --}}
@@ -35,8 +36,22 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="{{ asset('invitation-assets/basic/css/style.css') }}" rel="stylesheet">
+    
+    {{-- Live Edit Script (only for owner/admin) --}}
+    @auth
+    @if($invitation->user_id === auth()->id() || auth()->user()->hasRole('admin'))
+    <script src="{{ asset('assets/js/live-edit.js') }}" defer></script>
+    @endif
+    @endauth
 </head>
-<body>
+<body 
+    @auth
+    @if($invitation->user_id === auth()->id() || auth()->user()->hasRole('admin'))
+    data-invitation-id="{{ $invitation->id }}"
+    data-is-owner="true"
+    @endif
+    @endauth
+>
 
 {{-- ── HERO ──────────────────────────────────────────────────────── --}}
 <section id="hero" class="hero">
@@ -44,12 +59,22 @@
         <div class="hero-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
         <p class="hero-label">Undangan Pernikahan</p>
         <h1 class="hero-names">
-            {{ $data['groom_nickname'] ?? $data['groom_name'] ?? 'Mempelai Pria' }}
+            <span data-editable
+                  data-field-key="groom_name"
+                  data-field-type="text"
+                  data-field-label="Nama Mempelai Pria">{{ $data['groom_nickname'] ?? $data['groom_name'] ?? 'Mempelai Pria' }}</span>
             <span class="hero-ampersand">&</span>
-            {{ $data['bride_nickname'] ?? $data['bride_name'] ?? 'Mempelai Wanita' }}
+            <span data-editable
+                  data-field-key="bride_name"
+                  data-field-type="text"
+                  data-field-label="Nama Mempelai Wanita">{{ $data['bride_nickname'] ?? $data['bride_name'] ?? 'Mempelai Wanita' }}</span>
         </h1>
         @if(!empty($data['akad_date']))
-            <p class="hero-date">{{ \Carbon\Carbon::parse($data['akad_date'])->translatedFormat('d F Y') }}</p>
+            <p class="hero-date"
+               data-editable
+               data-field-key="akad_date"
+               data-field-type="date"
+               data-field-label="Tanggal Akad">{{ \Carbon\Carbon::parse($data['akad_date'])->translatedFormat('d F Y') }}</p>
         @endif
     </div>
 </section>
@@ -62,31 +87,61 @@
     <div class="couple-grid">
         <div>
             @if(!empty($data['groom_photo']))
-                <img src="{{ asset('storage/' . $data['groom_photo']) }}" class="couple-photo" alt="">
+                <div data-editable
+                     data-field-key="groom_photo"
+                     data-field-type="image"
+                     data-field-label="Foto Mempelai Pria">
+                    <img src="{{ asset('storage/' . $data['groom_photo']) }}" class="couple-photo" alt="">
+                </div>
             @else
                 <div class="couple-photo-placeholder">♂</div>
             @endif
-            <div class="couple-name">{{ $data['groom_name'] ?? '-' }}</div>
+            <div class="couple-name"
+                 data-editable
+                 data-field-key="groom_name"
+                 data-field-type="text"
+                 data-field-label="Nama Lengkap Pria">{{ $data['groom_name'] ?? '-' }}</div>
             <div class="couple-parents">
                 Putra dari<br>
-                {{ $data['groom_father'] ?? '' }}
+                <span data-editable
+                      data-field-key="groom_father"
+                      data-field-type="text"
+                      data-field-label="Nama Ayah Pria">{{ $data['groom_father'] ?? '' }}</span>
                 @if(!empty($data['groom_father']) && !empty($data['groom_mother'])) & @endif
-                {{ $data['groom_mother'] ?? '' }}
+                <span data-editable
+                      data-field-key="groom_mother"
+                      data-field-type="text"
+                      data-field-label="Nama Ibu Pria">{{ $data['groom_mother'] ?? '' }}</span>
             </div>
         </div>
         <div class="couple-sep">&</div>
         <div>
             @if(!empty($data['bride_photo']))
-                <img src="{{ asset('storage/' . $data['bride_photo']) }}" class="couple-photo" alt="">
+                <div data-editable
+                     data-field-key="bride_photo"
+                     data-field-type="image"
+                     data-field-label="Foto Mempelai Wanita">
+                    <img src="{{ asset('storage/' . $data['bride_photo']) }}" class="couple-photo" alt="">
+                </div>
             @else
                 <div class="couple-photo-placeholder">♀</div>
             @endif
-            <div class="couple-name">{{ $data['bride_name'] ?? '-' }}</div>
+            <div class="couple-name"
+                 data-editable
+                 data-field-key="bride_name"
+                 data-field-type="text"
+                 data-field-label="Nama Lengkap Wanita">{{ $data['bride_name'] ?? '-' }}</div>
             <div class="couple-parents">
                 Putri dari<br>
-                {{ $data['bride_father'] ?? '' }}
+                <span data-editable
+                      data-field-key="bride_father"
+                      data-field-type="text"
+                      data-field-label="Nama Ayah Wanita">{{ $data['bride_father'] ?? '' }}</span>
                 @if(!empty($data['bride_father']) && !empty($data['bride_mother'])) & @endif
-                {{ $data['bride_mother'] ?? '' }}
+                <span data-editable
+                      data-field-key="bride_mother"
+                      data-field-type="text"
+                      data-field-label="Nama Ibu Wanita">{{ $data['bride_mother'] ?? '' }}</span>
             </div>
         </div>
     </div>
@@ -101,22 +156,46 @@
         <div class="event-card">
             <h3>Akad Nikah</h3>
             @if(!empty($data['akad_date']))
-                <div class="event-date">{{ \Carbon\Carbon::parse($data['akad_date'])->translatedFormat('l, d F Y') }}</div>
+                <div class="event-date"
+                     data-editable
+                     data-field-key="akad_date"
+                     data-field-type="date"
+                     data-field-label="Tanggal Akad">{{ \Carbon\Carbon::parse($data['akad_date'])->translatedFormat('l, d F Y') }}</div>
             @endif
             @if(!empty($data['akad_time']))
-                <div class="event-time">{{ $data['akad_time'] }} WIB</div>
+                <div class="event-time"
+                     data-editable
+                     data-field-key="akad_time"
+                     data-field-type="time"
+                     data-field-label="Waktu Akad">{{ $data['akad_time'] }} WIB</div>
             @endif
-            <div class="event-venue">{{ $data['akad_venue'] ?? '' }}</div>
+            <div class="event-venue"
+                 data-editable
+                 data-field-key="akad_venue"
+                 data-field-type="text"
+                 data-field-label="Tempat Akad">{{ $data['akad_venue'] ?? '' }}</div>
         </div>
         <div class="event-card">
             <h3>Resepsi</h3>
             @if(!empty($data['reception_date']))
-                <div class="event-date">{{ \Carbon\Carbon::parse($data['reception_date'])->translatedFormat('l, d F Y') }}</div>
+                <div class="event-date"
+                     data-editable
+                     data-field-key="reception_date"
+                     data-field-type="date"
+                     data-field-label="Tanggal Resepsi">{{ \Carbon\Carbon::parse($data['reception_date'])->translatedFormat('l, d F Y') }}</div>
             @endif
             @if(!empty($data['reception_time']))
-                <div class="event-time">{{ $data['reception_time'] }} WIB</div>
+                <div class="event-time"
+                     data-editable
+                     data-field-key="reception_time"
+                     data-field-type="time"
+                     data-field-label="Waktu Resepsi">{{ $data['reception_time'] }} WIB</div>
             @endif
-            <div class="event-venue">{{ $data['reception_venue'] ?? '' }}</div>
+            <div class="event-venue"
+                 data-editable
+                 data-field-key="reception_venue"
+                 data-field-type="text"
+                 data-field-label="Tempat Resepsi">{{ $data['reception_venue'] ?? '' }}</div>
         </div>
     </div>
     @if(!empty($data['maps_url']))

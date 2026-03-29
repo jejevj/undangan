@@ -112,8 +112,12 @@ class SubscriptionController extends Controller
             ->where('status', 'pending')
             ->where('expired_at', '>', now())
             ->first();
+        
+        // Check if QRIS is enabled for merchant (from .env)
+        $qrisEnabled = env('DOKU_QRIS_ENABLED', 'false');
+        $qrisEnabled = filter_var($qrisEnabled, FILTER_VALIDATE_BOOLEAN);
 
-        return view('subscription.checkout', compact('plan', 'order', 'virtualAccount', 'ewalletPayment', 'qrisPayment'));
+        return view('subscription.checkout', compact('plan', 'order', 'virtualAccount', 'ewalletPayment', 'qrisPayment', 'qrisEnabled'));
     }
 
     public function createVirtualAccount(Request $request, UserSubscription $order)

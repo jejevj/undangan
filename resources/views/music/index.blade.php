@@ -19,15 +19,30 @@
         $activePlan = auth()->user()->activePlan();
         $user = auth()->user();
         $uploadedCount = \App\Models\Music::where('uploaded_by', $user->id)->count();
+        
+        // Hitung slot berbayar
+        $paidSlots = \App\Models\MusicUploadOrder::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('qty');
+        $usedPaidSlots = \App\Models\Music::where('uploaded_by', $user->id)
+            ->where('is_paid_upload', true)
+            ->count();
+        $remainingPaidSlots = $paidSlots - $usedPaidSlots;
+        
+        // User bisa upload jika:
+        // 1. Admin
+        // 2. Punya slot gratis dari paket (unlimited atau masih ada sisa)
+        // 3. Punya slot berbayar yang belum digunakan
         $canUpload = $user->isAdmin() 
                   || $activePlan->max_music_uploads === null 
-                  || ($activePlan->max_music_uploads > 0 && $uploadedCount < $activePlan->max_music_uploads);
+                  || ($activePlan->max_music_uploads > 0 && $uploadedCount < $activePlan->max_music_uploads)
+                  || $remainingPaidSlots > 0;
     @endphp
     
     @if($hasPremiumAccess)
         <div class="alert alert-success py-2 px-3 mb-0">
             <i class="fa fa-crown"></i>
-            Paket <strong>{{ $activePlan->name }}</strong> — Semua lagu premium gratis!
+            Paket <strong>{{ $activePlan->name }}</strong>
         </div>
     @else
         <div class="alert alert-info py-2 px-3 mb-0">
@@ -39,24 +54,15 @@
         </a>
     @endif
     
-    @if($canUpload)
-        <a href="{{ route('music.upload') }}" class="btn btn-primary btn-sm ms-auto">
-            <i class="fa fa-upload"></i> Upload Lagu
-            @if($activePlan->max_music_uploads !== null && $activePlan->max_music_uploads > 0)
-                ({{ $uploadedCount }}/{{ $activePlan->max_music_uploads }})
-            @endif
-        </a>
-    @elseif($activePlan->max_music_uploads === 0)
-        <div class="alert alert-warning py-2 px-3 mb-0 ms-auto">
-            <i class="fa fa-info-circle"></i>
-            Upload lagu tidak tersedia di paket Free
-        </div>
-    @else
-        <div class="alert alert-warning py-2 px-3 mb-0 ms-auto">
-            <i class="fa fa-info-circle"></i>
-            Limit upload tercapai ({{ $uploadedCount }}/{{ $activePlan->max_music_uploads }})
-        </div>
-    @endif
+    {{-- Tombol Upload - Semua user bisa klik, nanti diarahkan ke beli slot jika perlu --}}
+    <a href="{{ route('music.upload') }}" class="btn btn-primary btn-sm ms-auto">
+        <i class="fa fa-upload"></i> Upload Lagu
+        @if($activePlan->max_music_uploads !== null && $activePlan->max_music_uploads > 0)
+            ({{ $uploadedCount }}/{{ $activePlan->max_music_uploads }})
+        @elseif($remainingPaidSlots > 0)
+            ({{ $remainingPaidSlots }} slot berbayar tersedia)
+        @endif
+    </a>
 </div>
 
 <div class="row">
@@ -128,7 +134,11 @@
                         @elseif($song->uploaded_by === auth()->id())
                             Upload Saya
                         @elseif($hasPremiumAccess && $song->type === 'premium')
-                            Premium gratis (Paket {{ $activePlan->name }})
+                            @if(auth()->user()->isAdmin())
+                                Admin Access
+                            @else
+                                Premium gratis (Paket {{ $activePlan->name }})
+                            @endif
                         @else
                             Sudah dibeli
                         @endif

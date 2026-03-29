@@ -4,106 +4,168 @@ namespace App\Http\Controllers;
 
 use App\Models\Invitation;
 use App\Models\InvitationGallery;
+use App\Models\UserGalleryPhoto;
 use App\Models\GalleryOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class GalleryController extends Controller
 {
+    /**
+     * Gallery management page for invitation
+     * Shows user's photo pool and selected photos for this invitation
+     */
     public function index(Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
-        $invitation->load(['gallery', 'template', 'galleryOrders']);
+        $invitation->load(['gallery.photo', 'template']);
 
-        $limit     = $invitation->template->free_photo_limit;
-        $total     = $invitation->totalPhotoSlots();
-        $used      = $invitation->gallery()->count();
-        $remaining = $invitation->remainingPhotoSlots();
+        // Get user's gallery slots
+        $userSlots = auth()->user()->getGallerySlots();
+        $total = $userSlots->totalSlots();
+        $used = $userSlots->usedSlots();
+        $remaining = $userSlots->remainingSlots();
 
-        return view('gallery.index', compact('invitation', 'limit', 'total', 'used', 'remaining'));
+        // Get all user's photos (photo pool)
+        $allUserPhotos = auth()->user()->galleryPhotos()->latest()->get();
+        
+        // Get selected photo IDs for this invitation
+        $selectedPhotoIds = $invitation->selectedPhotos()->pluck('user_gallery_photos.id')->toArray();
+
+        return view('gallery.index', compact('invitation', 'total', 'used', 'remaining', 'allUserPhotos', 'selectedPhotoIds'));
     }
 
+    /**
+     * Upload new photos to user's photo pool
+     */
     public function store(Request $request, Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
 
-        // Cek slot tersedia
-        $remaining = $invitation->remainingPhotoSlots();
-        if ($remaining !== null && $remaining <= 0) {
+        // Check available slots (user-level)
+        $remaining = auth()->user()->remainingGallerySlots();
+        if ($remaining <= 0) {
             return back()->with('error', 'Slot foto habis. Beli slot tambahan terlebih dahulu.');
         }
 
         $request->validate([
-            'photos'          => 'required|array|min:1',
-            'photos.*'        => 'image|max:5120', // 5MB per foto
-            'captions'        => 'nullable|array',
-            'captions.*'      => 'nullable|string|max:100',
+            'photos'    => 'required|array|min:1',
+            'photos.*'  => 'image|max:5120', // 5MB per foto
+            'captions'  => 'nullable|array',
+            'captions.*' => 'nullable|string|max:100',
         ]);
 
-        $order = $invitation->gallery()->count();
-        foreach ($request->file('photos') as $i => $photo) {
-            // Cek lagi per foto jika upload banyak sekaligus
-            $rem = $invitation->remainingPhotoSlots();
-            if ($rem !== null && $rem <= 0) break;
+        $uploadedPhotos = [];
 
-            $path = $photo->store('gallery/' . $invitation->id, 'public');
-            $invitation->gallery()->create([
-                'path'    => $path,
+        foreach ($request->file('photos') as $i => $photo) {
+            // Check slot per photo if uploading multiple
+            $rem = auth()->user()->remainingGallerySlots();
+            if ($rem <= 0) break;
+
+            $path = $photo->store('gallery/' . auth()->id(), 'public');
+            
+            // Determine if this is paid slot
+            $userSlots = auth()->user()->getGallerySlots();
+            $freeRemaining = $userSlots->free_slots - auth()->user()->galleryPhotos()->where('is_paid', false)->count();
+            $isPaid = $freeRemaining <= 0;
+            
+            $uploadedPhoto = UserGalleryPhoto::create([
+                'user_id' => auth()->id(),
+                'path' => $path,
                 'caption' => $request->captions[$i] ?? null,
-                'order'   => $order++,
-                'is_paid' => false,
+                'is_paid' => $isPaid,
             ]);
+
+            $uploadedPhotos[] = $uploadedPhoto->id;
         }
 
-        return back()->with('success', 'Foto berhasil diupload.');
-    }
-
-    public function destroy(Invitation $invitation, InvitationGallery $photo)
-    {
-        $this->authorizeInvitation($invitation);
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->path);
-        $photo->delete();
-        return back()->with('success', 'Foto dihapus.');
+        return back()->with('success', count($uploadedPhotos) . ' foto berhasil diupload ke gallery Anda.');
     }
 
     /**
-     * Halaman beli slot foto tambahan (simulasi)
+     * Delete photo from user's pool
+     * Will also remove from all invitations using it
      */
-    public function buySlots(Request $request, Invitation $invitation)
+    public function destroy(Invitation $invitation, UserGalleryPhoto $photo)
+    {
+        $this->authorizeInvitation($invitation);
+        
+        // Ensure photo belongs to logged in user
+        if ($photo->user_id !== auth()->id()) {
+            abort(403);
+        }
+        
+        Storage::disk('public')->delete($photo->path);
+        $photo->delete(); // Cascade will remove from invitation_gallery
+        
+        return back()->with('success', 'Foto dihapus dari gallery Anda.');
+    }
+
+    /**
+     * Select/assign photos to invitation (multiple selection with ordering)
+     */
+    public function selectPhotos(Request $request, Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
 
-        $request->validate(['qty' => 'required|integer|min:1|max:20']);
-
-        $qty   = (int) $request->qty;
-        $price = $invitation->template->extra_photo_price;
-        $total = $qty * $price;
-
-        $order = GalleryOrder::create([
-            'order_number'    => GalleryOrder::generateOrderNumber(),
-            'invitation_id'   => $invitation->id,
-            'user_id'         => auth()->id(),
-            'qty'             => $qty,
-            'amount'          => $total,
-            'price_per_photo' => $price,
-            'status'          => 'pending',
-            'payment_method'  => 'simulation',
+        $request->validate([
+            'photo_ids' => 'required|array',
+            'photo_ids.*' => 'exists:user_gallery_photos,id',
         ]);
 
-        return view('gallery.buy', compact('invitation', 'order'));
+        $photoIds = $request->photo_ids;
+
+        // Verify all photos belong to user
+        $userPhotos = auth()->user()->galleryPhotos()->whereIn('id', $photoIds)->pluck('id')->toArray();
+        if (count($userPhotos) !== count($photoIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Beberapa foto tidak valid.'
+            ], 400);
+        }
+
+        DB::transaction(function () use ($invitation, $photoIds) {
+            // Remove all current selections
+            $invitation->gallery()->delete();
+
+            // Add new selections with order
+            foreach ($photoIds as $order => $photoId) {
+                InvitationGallery::create([
+                    'invitation_id' => $invitation->id,
+                    'photo_id' => $photoId,
+                    'order' => $order,
+                ]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => count($photoIds) . ' foto dipilih untuk undangan ini.'
+        ]);
     }
 
     /**
-     * Simulasi pembayaran slot foto
+     * Update photo order for invitation
      */
-    public function simulatePay(GalleryOrder $order)
+    public function updateOrder(Request $request, Invitation $invitation)
     {
-        abort_if($order->user_id !== auth()->id(), 403);
-        abort_if($order->isPaid(), 400);
+        $this->authorizeInvitation($invitation);
 
-        $order->update(['status' => 'paid', 'paid_at' => now()]);
+        $request->validate([
+            'photo_ids' => 'required|array',
+            'photo_ids.*' => 'exists:user_gallery_photos,id',
+        ]);
 
-        return redirect()->route('invitations.gallery.index', $order->invitation)
-            ->with('success', "{$order->qty} slot foto berhasil ditambahkan!");
+        DB::transaction(function () use ($invitation, $request) {
+            foreach ($request->photo_ids as $order => $photoId) {
+                InvitationGallery::where('invitation_id', $invitation->id)
+                    ->where('photo_id', $photoId)
+                    ->update(['order' => $order]);
+            }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Urutan foto berhasil diupdate.']);
     }
 
     private function authorizeInvitation(Invitation $invitation): void

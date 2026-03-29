@@ -48,6 +48,17 @@ class Invitation extends Model
         return $this->hasMany(InvitationGallery::class, 'invitation_id')->orderBy('order');
     }
 
+    /**
+     * Get selected photos for this invitation (through pivot)
+     */
+    public function selectedPhotos()
+    {
+        return $this->belongsToMany(UserGalleryPhoto::class, 'invitation_gallery', 'invitation_id', 'photo_id')
+            ->withPivot('order')
+            ->withTimestamps()
+            ->orderBy('invitation_gallery.order');
+    }
+
     public function galleryOrders(): HasMany
     {
         return $this->hasMany(GalleryOrder::class);

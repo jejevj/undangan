@@ -39,8 +39,12 @@
     @else
         <span class="badge badge-success align-self-center">Published</span>
         <a href="{{ route('invitation.show', $invitation->slug) }}" class="btn btn-outline-success btn-sm" target="_blank">
-            Lihat Link Publik
+            <i class="fa fa-external-link-alt"></i> Lihat Link Publik
         </a>
+        <form action="{{ route('invitations.unpublish', $invitation) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin mengubah status ke draft? Undangan tidak akan bisa diakses publik.')">
+            @csrf
+            <button class="btn btn-warning btn-sm"><i class="fa fa-undo"></i> Unpublish (Kembali ke Draft)</button>
+        </form>
     @endif
 </div>
 

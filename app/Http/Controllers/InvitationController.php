@@ -161,11 +161,73 @@ class InvitationController extends Controller
     {
         $this->authorizeInvitation($invitation);
 
-        $invitation->load(['data.templateField', 'template', 'gallery', 'bankAccounts']);
+        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts']);
         $data    = $invitation->getDataMap();
         $gallery = $invitation->gallery;
 
-        return view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery'));
+        // Debug: Log data
+        \Log::info('Preview - Data loaded', [
+            'groom_name' => $data['groom_name'] ?? 'NOT SET',
+            'bride_name' => $data['bride_name'] ?? 'NOT SET',
+            'data_count' => count($data),
+        ]);
+
+        // Debug: Log template info
+        \Log::info('Preview - Template Name: ' . $invitation->template->name);
+        \Log::info('Preview - Template Blade View: ' . $invitation->template->blade_view);
+        \Log::info('Preview - Template View Path: ' . $invitation->template->viewPath());
+
+        // Render template content
+        $templateContent = view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery'))->render();
+        
+        // Debug: Check if data-editable exists in rendered HTML
+        $editableCount = substr_count($templateContent, 'data-editable');
+        \Log::info('Preview - data-editable count in HTML: ' . $editableCount);
+        
+        // Check if user is owner/admin
+        $isOwner = $invitation->user_id === auth()->id() || auth()->user()->hasRole('admin');
+        
+        // Debug: Log injection status
+        \Log::info('Preview - Invitation ID: ' . $invitation->id);
+        \Log::info('Preview - User ID: ' . auth()->id());
+        \Log::info('Preview - Invitation Owner ID: ' . $invitation->user_id);
+        \Log::info('Preview - Is Owner: ' . ($isOwner ? 'YES' : 'NO'));
+        \Log::info('Preview - Will inject live edit: ' . ($isOwner ? 'YES' : 'NO'));
+        
+        if ($isOwner) {
+            // Inject live edit support directly into template HTML
+            $templateContent = $this->injectLiveEditSupport($templateContent, $invitation);
+            \Log::info('Preview - Live edit injected');
+        }
+        
+        return response($templateContent);
+    }
+    
+    /**
+     * Inject live edit support into template HTML
+     */
+    private function injectLiveEditSupport(string $html, Invitation $invitation): string
+    {
+        // Add CSRF token if not present
+        if (strpos($html, 'name="csrf-token"') === false) {
+            $csrfMeta = '<meta name="csrf-token" content="' . csrf_token() . '">';
+            $html = preg_replace('/(<head[^>]*>)/i', '$1' . PHP_EOL . '    ' . $csrfMeta, $html);
+        }
+        
+        // Add debug script
+        $debugScript = '<script>console.log("Live Edit: Injection successful for invitation ' . $invitation->id . '");</script>';
+        
+        // Add live edit scripts before </head>
+        $liveEditScript = $debugScript . PHP_EOL . 
+            '    <script src="' . asset('assets/js/live-edit.js') . '"></script>' . PHP_EOL .
+            '    <script src="' . asset('assets/js/live-edit-form-panel.js') . '"></script>';
+        $html = preg_replace('/(<\/head>)/i', '    ' . $liveEditScript . PHP_EOL . '$1', $html);
+        
+        // Add data attributes to body tag
+        $dataAttrs = 'data-invitation-id="' . $invitation->id . '" data-is-owner="true"';
+        $html = preg_replace('/(<body[^>]*)(>)/i', '$1 ' . $dataAttrs . '$2', $html);
+        
+        return $html;
     }
 
     /**
@@ -180,7 +242,7 @@ class InvitationController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
 
-        $invitation->load(['data.templateField', 'template', 'gallery', 'bankAccounts']);
+        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts']);
         $data    = $invitation->getDataMap();
         $gallery = $invitation->gallery;
 

@@ -9,11 +9,16 @@ class GalleryOrder extends Model
 {
     protected $fillable = [
         'order_number', 'invitation_id', 'user_id',
-        'qty', 'amount', 'price_per_photo',
-        'status', 'payment_method', 'paid_at',
+        'qty', 'amount', 'price_per_photo', 'admin_fee',
+        'status', 'payment_method', 'payment_channel_id',
+        'va_number', 'payment_url', 'qr_string', 'qr_url',
+        'paid_at', 'expired_at',
     ];
 
-    protected $casts = ['paid_at' => 'datetime'];
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'expired_at' => 'datetime',
+    ];
 
     public function invitation(): BelongsTo
     {
@@ -23,6 +28,11 @@ class GalleryOrder extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function paymentChannel(): BelongsTo
+    {
+        return $this->belongsTo(PaymentChannel::class);
     }
 
     public function isPaid(): bool
