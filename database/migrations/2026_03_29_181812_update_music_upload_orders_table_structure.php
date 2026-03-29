@@ -16,7 +16,7 @@ return new class extends Migration
             // $table->dropForeign(['music_id']);
             
             // Add new columns
-            $table->integer('qty')->default(1)->after('order_number');
+            // $table->integer('qty')->default(1)->after('order_number');
             $table->decimal('price_per_slot', 10, 2)->default(10000)->after('amount');
             $table->decimal('admin_fee', 10, 2)->default(0)->after('price_per_slot');
             $table->unsignedBigInteger('payment_channel_id')->nullable()->after('payment_method');
