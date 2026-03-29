@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('music_upload_orders', function (Blueprint $table) {
             // Drop foreign key first
-            $table->dropForeign(['music_id']);
+            // $table->dropForeign(['music_id']);
             
             // Add new columns
             $table->integer('qty')->default(1)->after('order_number');

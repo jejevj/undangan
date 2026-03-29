@@ -995,8 +995,7 @@ class LiveEditFormPanel {
             </div>
         `;
 
-        // Add gallery-specific styles
-        document.head.appendChild(style);
+        // Modal styles already added in createPanel
         document.body.appendChild(modal);
 
         // Photo selection handlers
