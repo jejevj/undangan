@@ -17,14 +17,14 @@ return new class extends Migration
             
             // Add new columns
             // $table->integer('qty')->default(1)->after('order_number');
-            $table->decimal('price_per_slot', 10, 2)->default(10000)->after('amount');
-            $table->decimal('admin_fee', 10, 2)->default(0)->after('price_per_slot');
-            $table->unsignedBigInteger('payment_channel_id')->nullable()->after('payment_method');
-            $table->string('va_number')->nullable()->after('payment_channel_id');
-            $table->string('payment_url')->nullable()->after('va_number');
-            $table->text('qr_string')->nullable()->after('payment_url');
-            $table->string('qr_url')->nullable()->after('qr_string');
-            $table->timestamp('expired_at')->nullable()->after('paid_at');
+            // $table->decimal('price_per_slot', 10, 2)->default(10000)->after('amount');
+            // $table->decimal('admin_fee', 10, 2)->default(0)->after('price_per_slot');
+            // $table->unsignedBigInteger('payment_channel_id')->nullable()->after('payment_method');
+            // $table->string('va_number')->nullable()->after('payment_channel_id');
+            // $table->string('payment_url')->nullable()->after('va_number');
+            // $table->text('qr_string')->nullable()->after('payment_url');
+            // $table->string('qr_url')->nullable()->after('qr_string');
+            // $table->timestamp('expired_at')->nullable()->after('paid_at');
             
             // Modify existing columns
             $table->decimal('amount', 10, 2)->change();
