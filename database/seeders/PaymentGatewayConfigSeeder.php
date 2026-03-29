@@ -24,7 +24,7 @@ class PaymentGatewayConfigSeeder extends Seeder
                 'doku_public_key' => "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0eauB3QupDEbp4Z7n19EQRVKhBqo5y6hkjWPG/Jpl5Cyf/+ONIaq3LaZ+FJEMn9ucOPohFoODZLPQp9HL6FNZ7Sa1VTMoZLZAqDUGxPrCuv+a9/+03MwVCqKc8M6t0Pb+diRBU4KApJIW/hW3Cze76zry9KE5qb0SOOsXr63MRq1CPdFXwdnA8vU2+zflTHQvtVyKFuOW1F3ZTX3KEt4QXwWzP4FwkDzai/iI9AezNnl4oGT1gCjBR2JREyP3/Fxbbusqn5cj3j12KMpTnXq7FO5BChTtc09u/XWHQkFnubsUBhbIcnZ18pkLPtlMnTTvwAiDU2bnlxypLAOyPCzQwIDAQAB\r\n-----END PUBLIC KEY-----",
                 'issuer' => null,
                 'base_url' => 'https://api.doku.com',
-                'is_active' => true,
+                'is_active' => true,'secret_key' => 'ISI_SECRET_KEY_DI_SINI', // ✅ WAJIB
                 
                 // NOTE: secret_key and private_key are encrypted and should be set manually
                 // after running this seeder using:
