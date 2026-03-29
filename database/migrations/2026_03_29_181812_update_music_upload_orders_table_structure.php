@@ -34,7 +34,7 @@ return new class extends Migration
             // $table->dropColumn(['temp_title', 'temp_artist', 'temp_file_path', 'music_id']);
             
             // Add foreign key for payment_channel_id
-            $table->foreign('payment_channel_id')->references('id')->on('payment_channels')->onDelete('set null');
+            // $table->foreign('payment_channel_id')->references('id')->on('payment_channels')->onDelete('set null');
         });
     }
 
