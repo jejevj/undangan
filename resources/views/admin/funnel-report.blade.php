@@ -6,414 +6,227 @@
 <style>
 .funnel-step {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s;
     position: relative;
+}
+.funnel-step:last-child {
+    margin-bottom: 0;
 }
 .funnel-step:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .funnel-bar {
-    height: 40px;
+    height: 35px;
     background: linear-gradient(90deg, #0d6efd 0%, #0a58ca 100%);
-    border-radius: 5px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
-    padding: 0 15px;
+    padding: 0 12px;
     color: white;
     font-weight: 600;
-    position: relative;
-    overflow: hidden;
+    font-size: 14px;
 }
-.funnel-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: shimmer 2s infinite;
+.funnel-bar.green {
+    background: linear-gradient(90deg, #198754 0%, #146c43 100%);
 }
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+.funnel-bar.cyan {
+    background: linear-gradient(90deg, #0dcaf0 0%, #0aa2c0 100%);
 }
 .dropoff-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
     background: #dc3545;
     color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
 }
 .conversion-badge {
     background: #198754;
     color: white;
-    padding: 3px 8px;
-    border-radius: 15px;
-    font-size: 11px;
-    margin-left: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    margin-left: 8px;
 }
-.chart-container {
-    position: relative;
-    height: 400px;
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+.stat-card h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 10px 0;
+}
+.stat-card.primary { border-top: 4px solid #0d6efd; }
+.stat-card.success { border-top: 4px solid #198754; }
+.stat-card.info { border-top: 4px solid #0dcaf0; }
 </style>
 @endpush
 
 @section('content')
 {{-- Date Range Filter --}}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Start Date</label>
-                        <input type="date" name="start_date" class="form-control" 
-                               value="{{ request('start_date', now()->subDays(30)->format('Y-m-d')) }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">End Date</label>
-                        <input type="date" name="end_date" class="form-control" 
-                               value="{{ request('end_date', now()->format('Y-m-d')) }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary d-block w-100">
-                            <i class="fa fa-filter"></i> Apply Filter
-                        </button>
-                    </div>
-                </form>
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label mb-1 small">Start Date</label>
+                <input type="date" name="start_date" class="form-control form-control-sm" 
+                       value="{{ request('start_date', now()->subDays(30)->format('Y-m-d')) }}">
             </div>
-        </div>
+            <div class="col-md-4">
+                <label class="form-label mb-1 small">End Date</label>
+                <input type="date" name="end_date" class="form-control form-control-sm" 
+                       value="{{ request('end_date', now()->format('Y-m-d')) }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="fa fa-filter"></i> Apply Filter
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 {{-- Overall Conversion Rates --}}
-<div class="row mb-4">
+<div class="row g-3 mb-3">
     <div class="col-md-4">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5 class="text-white">Subscription Conversion Rate</h5>
-                <h2 class="text-white mb-0">{{ $subscriptionConversion }}%</h2>
-                <small class="text-white-50">From viewing plans to payment completed</small>
-            </div>
+        <div class="stat-card primary">
+            <div class="small text-muted">Subscription Conversion</div>
+            <h2 class="text-primary">{{ $subscriptionConversion }}%</h2>
+            <small class="text-muted">Plans → Payment</small>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="text-white">Invitation Conversion Rate</h5>
-                <h2 class="text-white mb-0">{{ $invitationConversion }}%</h2>
-                <small class="text-white-50">From viewing templates to publishing</small>
-            </div>
+        <div class="stat-card success">
+            <div class="small text-muted">Invitation Conversion</div>
+            <h2 class="text-success">{{ $invitationConversion }}%</h2>
+            <small class="text-muted">Templates → Publish</small>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h5 class="text-white">Registration Conversion Rate</h5>
-                <h2 class="text-white mb-0">{{ $registrationConversion }}%</h2>
-                <small class="text-white-50">From viewing register to success</small>
-            </div>
+        <div class="stat-card info">
+            <div class="small text-muted">Registration Conversion</div>
+            <h2 class="text-info">{{ $registrationConversion }}%</h2>
+            <small class="text-muted">View → Success</small>
         </div>
     </div>
 </div>
 
 {{-- Subscription Funnel --}}
-<div class="row">
-    <div class="col-xl-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Subscription Funnel</h4>
-            </div>
-            <div class="card-body">
-                @foreach($subscriptionFunnel as $index => $step)
-                <div class="funnel-step">
-                    @if($step['dropoff_rate'] > 0)
-                    <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
-                    @endif
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <strong>{{ $index + 1 }}. {{ $step['label'] }}</strong>
-                            <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
-                        </div>
-                        <div class="text-muted">
-                            <strong>{{ number_format($step['count']) }}</strong> sessions
-                        </div>
-                    </div>
-                    
-                    <div class="funnel-bar" style="width: {{ $step['count'] > 0 ? ($step['count'] / $subscriptionFunnel[0]['count'] * 100) : 0 }}%">
-                        {{ number_format($step['count']) }}
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+@if(count($subscriptionFunnel) > 0 && $subscriptionFunnel[0]['count'] > 0)
+<div class="card mb-3">
+    <div class="card-header py-2">
+        <h5 class="mb-0">Subscription Funnel</h5>
     </div>
-
-    <div class="col-xl-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Top Dropoff Points</h4>
-            </div>
-            <div class="card-body">
-                @foreach($subscriptionDropoffs as $dropoff)
-                <div class="alert alert-danger">
-                    <strong>{{ $dropoff['label'] }}</strong>
-                    <div class="mt-2">
-                        <span class="badge bg-danger">{{ $dropoff['dropoff_rate'] }}% dropoff</span>
-                        <span class="badge bg-secondary">{{ number_format($dropoff['count']) }} users</span>
-                    </div>
+    <div class="card-body">
+        @foreach($subscriptionFunnel as $index => $step)
+        <div class="funnel-step">
+            @if($step['dropoff_rate'] > 0)
+            <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
+            @endif
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong style="font-size: 14px;">{{ $index + 1 }}. {{ $step['label'] }}</strong>
+                    <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
                 </div>
-                @endforeach
+                <div class="text-muted small">
+                    <strong>{{ number_format($step['count']) }}</strong> sessions
+                </div>
+            </div>
+            <div class="funnel-bar" style="width: {{ $step['count'] > 0 ? ($step['count'] / $subscriptionFunnel[0]['count'] * 100) : 0 }}%">
+                {{ number_format($step['count']) }}
             </div>
         </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h4 class="card-title">Subscription Funnel Chart</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="subscriptionFunnelChart" height="300"></canvas>
-            </div>
-        </div>
+        @endforeach
     </div>
 </div>
+@endif
 
 {{-- Invitation Funnel --}}
-<div class="row mt-4">
-    <div class="col-xl-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Invitation Funnel</h4>
-            </div>
-            <div class="card-body">
-                @foreach($invitationFunnel as $index => $step)
-                <div class="funnel-step">
-                    @if($step['dropoff_rate'] > 0)
-                    <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
-                    @endif
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <strong>{{ $index + 1 }}. {{ $step['label'] }}</strong>
-                            <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
-                        </div>
-                        <div class="text-muted">
-                            <strong>{{ number_format($step['count']) }}</strong> sessions
-                        </div>
-                    </div>
-                    
-                    <div class="funnel-bar" style="width: {{ $step['count'] > 0 ? ($step['count'] / $invitationFunnel[0]['count'] * 100) : 0 }}%; background: linear-gradient(90deg, #198754 0%, #146c43 100%);">
-                        {{ number_format($step['count']) }}
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+@if(count($invitationFunnel) > 0 && $invitationFunnel[0]['count'] > 0)
+<div class="card mb-3">
+    <div class="card-header py-2">
+        <h5 class="mb-0">Invitation Funnel</h5>
     </div>
-
-    <div class="col-xl-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Top Dropoff Points</h4>
-            </div>
-            <div class="card-body">
-                @foreach($invitationDropoffs as $dropoff)
-                <div class="alert alert-warning">
-                    <strong>{{ $dropoff['label'] }}</strong>
-                    <div class="mt-2">
-                        <span class="badge bg-warning">{{ $dropoff['dropoff_rate'] }}% dropoff</span>
-                        <span class="badge bg-secondary">{{ number_format($dropoff['count']) }} users</span>
-                    </div>
+    <div class="card-body">
+        @foreach($invitationFunnel as $index => $step)
+        <div class="funnel-step">
+            @if($step['dropoff_rate'] > 0)
+            <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
+            @endif
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong style="font-size: 14px;">{{ $index + 1 }}. {{ $step['label'] }}</strong>
+                    <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
                 </div>
-                @endforeach
+                <div class="text-muted small">
+                    <strong>{{ number_format($step['count']) }}</strong> sessions
+                </div>
+            </div>
+            <div class="funnel-bar green" style="width: {{ $step['count'] > 0 ? ($step['count'] / $invitationFunnel[0]['count'] * 100) : 0 }}%">
+                {{ number_format($step['count']) }}
             </div>
         </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h4 class="card-title">Invitation Funnel Chart</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="invitationFunnelChart" height="300"></canvas>
-            </div>
-        </div>
+        @endforeach
     </div>
 </div>
+@endif
 
-{{-- Registration Funnel (Anonymous Users) --}}
-<div class="row mt-4">
-    <div class="col-xl-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Registration Funnel <span class="badge bg-info">Anonymous Users</span></h4>
-            </div>
-            <div class="card-body">
-                @foreach($registrationFunnel as $index => $step)
-                <div class="funnel-step">
-                    @if($step['dropoff_rate'] > 0)
-                    <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
-                    @endif
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <strong>{{ $index + 1 }}. {{ $step['label'] }}</strong>
-                            <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
-                        </div>
-                        <div class="text-muted">
-                            <strong>{{ number_format($step['count']) }}</strong> sessions
-                        </div>
-                    </div>
-                    
-                    <div class="funnel-bar" style="width: {{ $step['count'] > 0 ? ($step['count'] / $registrationFunnel[0]['count'] * 100) : 0 }}%; background: linear-gradient(90deg, #0dcaf0 0%, #0aa2c0 100%);">
-                        {{ number_format($step['count']) }}
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+{{-- Registration Funnel --}}
+@if(count($registrationFunnel) > 0 && $registrationFunnel[0]['count'] > 0)
+<div class="card mb-3">
+    <div class="card-header py-2">
+        <h5 class="mb-0">Registration Funnel <span class="badge bg-info">Anonymous Users</span></h5>
     </div>
-
-    <div class="col-xl-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Top Dropoff Points</h4>
+    <div class="card-body">
+        @foreach($registrationFunnel as $index => $step)
+        <div class="funnel-step">
+            @if($step['dropoff_rate'] > 0)
+            <span class="dropoff-badge">-{{ $step['dropoff_rate'] }}%</span>
+            @endif
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong style="font-size: 14px;">{{ $index + 1 }}. {{ $step['label'] }}</strong>
+                    <span class="conversion-badge">{{ $step['conversion_rate'] }}%</span>
+                </div>
+                <div class="text-muted small">
+                    <strong>{{ number_format($step['count']) }}</strong> sessions
+                </div>
             </div>
-            <div class="card-body">
-                @forelse($registrationDropoffs as $dropoff)
-                <div class="alert alert-info">
-                    <strong>{{ $dropoff['label'] }}</strong>
-                    <div class="mt-2">
-                        <span class="badge bg-info">{{ $dropoff['dropoff_rate'] }}% dropoff</span>
-                        <span class="badge bg-secondary">{{ number_format($dropoff['count']) }} users</span>
-                    </div>
-                </div>
-                @empty
-                <div class="alert alert-secondary">
-                    <small>No significant dropoffs detected</small>
-                </div>
-                @endforelse
+            <div class="funnel-bar cyan" style="width: {{ $step['count'] > 0 ? ($step['count'] / $registrationFunnel[0]['count'] * 100) : 0 }}%">
+                {{ number_format($step['count']) }}
             </div>
         </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h4 class="card-title">Registration Funnel Chart</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="registrationFunnelChart" height="300"></canvas>
-            </div>
-        </div>
+        @endforeach
     </div>
 </div>
+@endif
+
+{{-- Empty State --}}
+@if((count($subscriptionFunnel) == 0 || $subscriptionFunnel[0]['count'] == 0) && 
+    (count($invitationFunnel) == 0 || $invitationFunnel[0]['count'] == 0) && 
+    (count($registrationFunnel) == 0 || $registrationFunnel[0]['count'] == 0))
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fa fa-chart-line fa-3x text-muted mb-3"></i>
+        <h5>Belum Ada Data Funnel</h5>
+        <p class="text-muted">Data akan muncul setelah ada aktivitas user di aplikasi.</p>
+        <small class="text-muted">
+            Gunakan command <code>php artisan funnel:generate-sample --days=7</code> untuk generate sample data.
+        </small>
+    </div>
+</div>
+@endif
+
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-// Subscription Funnel Chart
-const subCtx = document.getElementById('subscriptionFunnelChart').getContext('2d');
-new Chart(subCtx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode(collect($subscriptionFunnel)->pluck('label')) !!},
-        datasets: [{
-            label: 'Sessions',
-            data: {!! json_encode(collect($subscriptionFunnel)->pluck('count')) !!},
-            backgroundColor: 'rgba(13, 110, 253, 0.8)',
-            borderColor: 'rgb(13, 110, 253)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
-// Invitation Funnel Chart
-const invCtx = document.getElementById('invitationFunnelChart').getContext('2d');
-new Chart(invCtx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode(collect($invitationFunnel)->pluck('label')) !!},
-        datasets: [{
-            label: 'Sessions',
-            data: {!! json_encode(collect($invitationFunnel)->pluck('count')) !!},
-            backgroundColor: 'rgba(25, 135, 84, 0.8)',
-            borderColor: 'rgb(25, 135, 84)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-
-// Registration Funnel Chart
-const regCtx = document.getElementById('registrationFunnelChart').getContext('2d');
-new Chart(regCtx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode(collect($registrationFunnel)->pluck('label')) !!},
-        datasets: [{
-            label: 'Sessions',
-            data: {!! json_encode(collect($registrationFunnel)->pluck('count')) !!},
-            backgroundColor: 'rgba(13, 202, 240, 0.8)',
-            borderColor: 'rgb(13, 202, 240)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-</script>
-@endpush
