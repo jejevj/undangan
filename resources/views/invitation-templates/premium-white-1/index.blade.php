@@ -35,6 +35,9 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="{{ asset('invitation-assets/premium-white-1/css/style.css') }}" rel="stylesheet">
+    
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -161,14 +164,59 @@
 {{-- ══════════════════════════════════════════════════════════════════
      LOVE STORY
      ══════════════════════════════════════════════════════════════════ --}}
-@if(!empty($data['love_story']))
+@if(!empty($data['love_story']) || ($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0))
 <section id="cerita" class="section section-cream reveal">
     <p class="t-upper t-muted">Kisah Kami</p>
     <h2 class="section-title">Cerita Cinta</h2>
     <div class="divider"></div>
-    <p style="max-width:520px;margin:20px auto 0;line-height:1.9;color:#666" data-editable data-field-key="love_story" data-field-type="textarea" data-field-label="Cerita Cinta">
-        {{ $data['love_story'] }}
-    </p>
+    
+    @if($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0)
+        {{-- Timeline Mode --}}
+        <div class="love-story-timeline-container" style="max-width:600px;margin:20px auto 0;">
+            <div class="love-story-timeline">
+                @php $previousSender = null; @endphp
+                @foreach($invitation->loveStoryTimeline as $item)
+                    @if($item->is_timeskip && $item->timeskip_label)
+                        {{-- Timeskip Separator --}}
+                        <div class="timeline-timeskip-separator">
+                            <div class="timeskip-line"></div>
+                            <div class="timeskip-text">{{ $item->timeskip_label }}</div>
+                            <div class="timeskip-line"></div>
+                        </div>
+                        @php $previousSender = null; @endphp
+                    @else
+                        @php $showAvatar = ($previousSender !== $item->sender); @endphp
+                        <div class="timeline-chat-item {{ $item->isFromBride() ? 'from-bride' : 'from-groom' }} {{ !$showAvatar ? 'no-avatar' : '' }}">
+                            @if($showAvatar)
+                                <div class="chat-avatar">
+                                    {{ $item->isFromGroom() ? '♂' : '♀' }}
+                                </div>
+                            @else
+                                <div class="chat-avatar-spacer"></div>
+                            @endif
+                            <div class="chat-bubble">
+                                @if($showAvatar)
+                                    <div class="chat-sender">
+                                        {{ $item->isFromGroom() ? ($data['groom_nickname'] ?? $data['groom_name'] ?? 'Mempelai Pria') : ($data['bride_nickname'] ?? $data['bride_name'] ?? 'Mempelai Wanita') }}
+                                    </div>
+                                @endif
+                                <div class="chat-message">{{ $item->message }}</div>
+                                @if($showAvatar && $item->formatted_date_time)
+                                    <div class="chat-time">{{ $item->formatted_date_time }}</div>
+                                @endif
+                            </div>
+                        </div>
+                        @php $previousSender = $item->sender; @endphp
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @else
+        {{-- Long Text Mode --}}
+        <p style="max-width:520px;margin:20px auto 0;line-height:1.9;color:#666" data-editable data-field-key="love_story" data-field-type="textarea" data-field-label="Cerita Cinta">
+            {{ $data['love_story'] }}
+        </p>
+    @endif
 </section>
 @endif
 
@@ -176,6 +224,11 @@
      GIFT SECTION
      ══════════════════════════════════════════════════════════════════ --}}
 @include('invitation-templates._gift')
+
+{{-- ══════════════════════════════════════════════════════════════════
+     GUEST MESSAGES (only if 'to' parameter exists)
+     ══════════════════════════════════════════════════════════════════ --}}
+@include('invitation-templates._guest_messages', ['messageSectionClass' => 'section-cream'])
 
 {{-- ══════════════════════════════════════════════════════════════════
      FOOTER
@@ -229,7 +282,16 @@
         Acara
     </a>
 
-    @if(!empty($data['love_story']))
+    @if(isset($gallery) && $gallery->count())
+    <a href="#galeri" class="nav-item" data-section="galeri" aria-label="Galeri">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        Galeri
+    </a>
+    @endif
+
+    @if(!empty($data['love_story']) || ($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0))
     <a href="#cerita" class="nav-item" data-section="cerita" aria-label="Cerita">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -238,12 +300,12 @@
     </a>
     @endif
 
-    @if(isset($gallery) && $gallery->count())
-    <a href="#galeri" class="nav-item" data-section="galeri" aria-label="Galeri">
+    @if(isset($invitation) && $invitation->isGiftActive() && $invitation->bankAccounts->count())
+    <a href="#gift" class="nav-item" data-section="gift" aria-label="Gift">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
         </svg>
-        Galeri
+        Gift
     </a>
     @endif
 

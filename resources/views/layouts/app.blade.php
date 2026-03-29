@@ -231,5 +231,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     @stack('scripts')
+    
+    {{-- Modals Stack - for modals that need to be outside main forms --}}
+    @stack('modals')
 </body>
 </html>

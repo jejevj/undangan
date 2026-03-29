@@ -134,11 +134,23 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                alert('✅ ' + response.message);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Koneksi Berhasil!',
+                    text: response.message,
+                    confirmButtonColor: '#28a745',
+                    confirmButtonText: 'OK'
+                });
             },
             error: function(xhr) {
                 const message = xhr.responseJSON?.message || 'Gagal test koneksi';
-                alert('❌ ' + message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Koneksi Gagal',
+                    text: message,
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'OK'
+                });
             },
             complete: function() {
                 btn.prop('disabled', false).html(originalHtml);

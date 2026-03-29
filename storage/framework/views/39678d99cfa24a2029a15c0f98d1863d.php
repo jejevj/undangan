@@ -233,6 +233,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <?php echo $__env->yieldPushContent('scripts'); ?>
+    
+    
+    <?php echo $__env->yieldPushContent('modals'); ?>
 </body>
 </html>
 <?php /**PATH C:\laragon\www\idorganizer\undangan\resources\views/layouts/app.blade.php ENDPATH**/ ?>

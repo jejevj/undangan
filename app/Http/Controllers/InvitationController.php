@@ -105,7 +105,7 @@ class InvitationController extends Controller
         $invitation = Invitation::create([
             'user_id'     => auth()->id(),
             'template_id' => $template->id,
-            'slug'        => Str::uuid(),
+            'slug'        => $this->generateInvitationSlug($request->input('fields', [])),
             'title'       => $request->title,
             'greeting'    => $request->greeting,
             'status'      => 'draft',
@@ -122,6 +122,7 @@ class InvitationController extends Controller
     {
         $this->authorizeInvitation($invitation);
 
+        $invitation->load('loveStoryTimeline');
         $template      = $invitation->template()->with(['fields' => fn($q) => $q->orderBy('order')])->first();
         $fieldsByGroup = $template->fields->groupBy('group');
         $accessibleMusic = Music::accessibleByUser(auth()->user());
@@ -161,7 +162,7 @@ class InvitationController extends Controller
     {
         $this->authorizeInvitation($invitation);
 
-        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts']);
+        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts', 'loveStoryTimeline']);
         $data    = $invitation->getDataMap();
         $gallery = $invitation->gallery;
 
@@ -242,27 +243,36 @@ class InvitationController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
 
-        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts']);
+        $invitation->load(['data.templateField', 'template', 'gallery.photo', 'bankAccounts', 'loveStoryTimeline', 'guestMessages']);
         $data    = $invitation->getDataMap();
         $gallery = $invitation->gallery;
 
-        if ($request->boolean('open')) {
-            return view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery'));
+        // Resolve nama tamu dari ?to parameter
+        $guestName = null;
+        $toParam   = $request->query('to');
+
+        if ($toParam) {
+            // Format guest name from URL parameter (e.g., "bapak-ibu-hendra" -> "Bapak Ibu Hendra")
+            $guestName = ucwords(str_replace('-', ' ', $toParam));
         }
 
-        // Resolve nama tamu dari ?to=slug
-        $guestName = null;
-        $toSlug    = $request->query('to');
+        if ($request->boolean('open')) {
+            return view($invitation->template->viewPath(), compact('invitation', 'data', 'gallery', 'guestName'));
+        }
 
-        if ($toSlug) {
-            $guest     = $invitation->guests()->where('slug', $toSlug)->first();
-            $guestName = $guest?->name;
+        // Resolve nama tamu dari ?to parameter
+        $guestName = null;
+        $toParam   = $request->query('to');
+
+        if ($toParam) {
+            // Format guest name from URL parameter (e.g., "bapak-ibu-hendra" -> "Bapak Ibu Hendra")
+            $guestName = ucwords(str_replace('-', ' ', $toParam));
         }
 
         // URL tombol "Buka Undangan" — pertahankan ?to agar terbawa
         $invitationUrl = route('invitation.show', $slug)
             . '?open=1'
-            . ($toSlug ? '&to=' . urlencode($toSlug) : '');
+            . ($toParam ? '&to=' . urlencode($toParam) : '');
 
         return view('invitation-templates.cover', compact('invitation', 'data', 'guestName', 'invitationUrl'));
     }
@@ -322,5 +332,33 @@ class InvitationController extends Controller
                 ['value' => $value]
             );
         }
+    }
+
+    /**
+     * Generate slug dari nickname kedua mempelai
+     * Format: prianickname-wanitanickname
+     * Fallback ke UUID jika nickname tidak tersedia
+     */
+    private function generateInvitationSlug(array $fields): string
+    {
+        $groomNickname = $fields['groom_nickname'] ?? $fields['groom_name'] ?? null;
+        $brideNickname = $fields['bride_nickname'] ?? $fields['bride_name'] ?? null;
+
+        if ($groomNickname && $brideNickname) {
+            $slug = Str::slug($groomNickname) . '-' . Str::slug($brideNickname);
+            
+            // Cek apakah slug sudah digunakan
+            $count = 1;
+            $originalSlug = $slug;
+            while (Invitation::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $count;
+                $count++;
+            }
+            
+            return $slug;
+        }
+
+        // Fallback ke UUID jika nickname tidak tersedia
+        return Str::uuid();
     }
 }

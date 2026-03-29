@@ -82,17 +82,33 @@ class GuestController extends Controller
         $this->authorizeInvitation($invitation);
 
         $invitation->load(['data.templateField']);
-        $message = $invitation->renderGreeting($guest);
-        $link    = route('invitation.show', $invitation->slug) . '?to=' . urlencode($guest->slug);
+        
+        // Format: nama-tamu-disini (slugified from name)
+        $toParam = \Illuminate\Support\Str::slug($guest->name);
+        $link    = route('invitation.show', $invitation->slug) . '?to=' . urlencode($toParam);
+        
+        // Replace {link} in greeting message
+        $message = $this->renderGreetingMessage($invitation, $guest, $link);
         $waUrl   = $this->buildWhatsappUrl($guest, $message);
 
         return response()->json([
-            'name'    => $guest->name,
-            'message' => $message,
-            'link'    => $link,
-            'wa_url'  => $waUrl,
+            'name'      => $guest->name,
+            'message'   => $message,
+            'link'      => $link,
+            'wa_url'    => $waUrl,
             'has_phone' => (bool) $guest->getWhatsappNumber(),
         ]);
+    }
+
+    /**
+     * Render greeting message with placeholders
+     */
+    private function renderGreetingMessage(Invitation $invitation, Guest $guest, string $link): string
+    {
+        $text = $invitation->greeting ?? '';
+        $text = str_replace('{nama_tamu}', $guest->name, $text);
+        $text = str_replace('{link}', $link, $text);
+        return $text;
     }
 
     /**

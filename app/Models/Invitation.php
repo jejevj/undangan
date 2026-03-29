@@ -15,7 +15,7 @@ class Invitation extends Model
         'event_date', 'event_time', 'event_location', 'event_address',
         'groom_name', 'groom_father', 'groom_mother',
         'bride_name', 'bride_father', 'bride_mother',
-        'opening_text', 'closing_text', 'is_published'
+        'opening_text', 'closing_text', 'is_published', 'love_story_mode'
     ];
 
     protected $casts = [
@@ -72,6 +72,35 @@ class Invitation extends Model
     public function featureOrders(): HasMany
     {
         return $this->hasMany(InvitationFeatureOrder::class);
+    }
+
+    public function loveStoryTimeline(): HasMany
+    {
+        return $this->hasMany(LoveStoryTimeline::class)->orderBy('order');
+    }
+
+    public function guestMessages(): HasMany
+    {
+        return $this->hasMany(GuestMessage::class)
+            ->where('is_approved', true)
+            ->orderByDesc('likes_count')
+            ->latest();
+    }
+
+    /**
+     * Check if user can use timeline mode (premium only)
+     */
+    public function canUseTimelineMode(): bool
+    {
+        // Check if user has premium plan
+        $user = $this->user;
+        if (!$user) return false;
+
+        $plan = $user->activePlan();
+        if (!$plan) return false;
+
+        // Free plan cannot use timeline
+        return !$plan->isFree();
     }
 
     /** Apakah gift section bisa ditampilkan */

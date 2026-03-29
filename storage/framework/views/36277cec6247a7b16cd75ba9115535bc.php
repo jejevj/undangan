@@ -35,6 +35,9 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="<?php echo e(asset('invitation-assets/premium-white-1/css/style.css')); ?>" rel="stylesheet">
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -150,20 +153,70 @@
 <?php echo $__env->make('invitation-templates._gallery', ['galleryColumns' => 3], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 
-<?php if(!empty($data['love_story'])): ?>
+<?php if(!empty($data['love_story']) || ($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0)): ?>
 <section id="cerita" class="section section-cream reveal">
     <p class="t-upper t-muted">Kisah Kami</p>
     <h2 class="section-title">Cerita Cinta</h2>
     <div class="divider"></div>
-    <p style="max-width:520px;margin:20px auto 0;line-height:1.9;color:#666" data-editable data-field-key="love_story" data-field-type="textarea" data-field-label="Cerita Cinta">
-        <?php echo e($data['love_story']); ?>
+    
+    <?php if($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0): ?>
+        
+        <div class="love-story-timeline-container" style="max-width:600px;margin:20px auto 0;">
+            <div class="love-story-timeline">
+                <?php $previousSender = null; ?>
+                <?php $__currentLoopData = $invitation->loveStoryTimeline; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if($item->is_timeskip && $item->timeskip_label): ?>
+                        
+                        <div class="timeline-timeskip-separator">
+                            <div class="timeskip-line"></div>
+                            <div class="timeskip-text"><?php echo e($item->timeskip_label); ?></div>
+                            <div class="timeskip-line"></div>
+                        </div>
+                        <?php $previousSender = null; ?>
+                    <?php else: ?>
+                        <?php $showAvatar = ($previousSender !== $item->sender); ?>
+                        <div class="timeline-chat-item <?php echo e($item->isFromBride() ? 'from-bride' : 'from-groom'); ?> <?php echo e(!$showAvatar ? 'no-avatar' : ''); ?>">
+                            <?php if($showAvatar): ?>
+                                <div class="chat-avatar">
+                                    <?php echo e($item->isFromGroom() ? '♂' : '♀'); ?>
 
-    </p>
+                                </div>
+                            <?php else: ?>
+                                <div class="chat-avatar-spacer"></div>
+                            <?php endif; ?>
+                            <div class="chat-bubble">
+                                <?php if($showAvatar): ?>
+                                    <div class="chat-sender">
+                                        <?php echo e($item->isFromGroom() ? ($data['groom_nickname'] ?? $data['groom_name'] ?? 'Mempelai Pria') : ($data['bride_nickname'] ?? $data['bride_name'] ?? 'Mempelai Wanita')); ?>
+
+                                    </div>
+                                <?php endif; ?>
+                                <div class="chat-message"><?php echo e($item->message); ?></div>
+                                <?php if($showAvatar && $item->formatted_date_time): ?>
+                                    <div class="chat-time"><?php echo e($item->formatted_date_time); ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php $previousSender = $item->sender; ?>
+                    <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+        </div>
+    <?php else: ?>
+        
+        <p style="max-width:520px;margin:20px auto 0;line-height:1.9;color:#666" data-editable data-field-key="love_story" data-field-type="textarea" data-field-label="Cerita Cinta">
+            <?php echo e($data['love_story']); ?>
+
+        </p>
+    <?php endif; ?>
 </section>
 <?php endif; ?>
 
 
 <?php echo $__env->make('invitation-templates._gift', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+
+<?php echo $__env->make('invitation-templates._guest_messages', ['messageSectionClass' => 'section-cream'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 
 <footer class="inv-footer">
@@ -211,7 +264,16 @@
         Acara
     </a>
 
-    <?php if(!empty($data['love_story'])): ?>
+    <?php if(isset($gallery) && $gallery->count()): ?>
+    <a href="#galeri" class="nav-item" data-section="galeri" aria-label="Galeri">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        Galeri
+    </a>
+    <?php endif; ?>
+
+    <?php if(!empty($data['love_story']) || ($invitation->love_story_mode === 'timeline' && $invitation->loveStoryTimeline->count() > 0)): ?>
     <a href="#cerita" class="nav-item" data-section="cerita" aria-label="Cerita">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -220,12 +282,12 @@
     </a>
     <?php endif; ?>
 
-    <?php if(isset($gallery) && $gallery->count()): ?>
-    <a href="#galeri" class="nav-item" data-section="galeri" aria-label="Galeri">
+    <?php if(isset($invitation) && $invitation->isGiftActive() && $invitation->bankAccounts->count()): ?>
+    <a href="#gift" class="nav-item" data-section="gift" aria-label="Gift">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
         </svg>
-        Galeri
+        Gift
     </a>
     <?php endif; ?>
 

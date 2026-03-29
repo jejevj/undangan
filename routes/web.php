@@ -44,9 +44,6 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 Route::post('/register', [RegisterController::class, 'register'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Halaman publik undangan (tanpa auth)
-Route::get('/inv/{slug}', [InvitationController::class, 'show'])->name('invitation.show');
-
 // Protected routes with /dash prefix
 Route::prefix('dash')->middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -117,6 +114,14 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::delete('invitations/{invitation}/gallery/{photo}', [GalleryController::class, 'destroy'])->name('invitations.gallery.destroy');
     Route::post('invitations/{invitation}/gallery/select', [GalleryController::class, 'selectPhotos'])->name('invitations.gallery.select');
     Route::post('invitations/{invitation}/gallery/update-order', [GalleryController::class, 'updateOrder'])->name('invitations.gallery.update-order');
+    
+    // Love Story Timeline Management
+    Route::get('invitations/{invitation}/love-story', [\App\Http\Controllers\LoveStoryTimelineController::class, 'index'])->name('invitations.love-story.index');
+    Route::post('invitations/{invitation}/love-story', [\App\Http\Controllers\LoveStoryTimelineController::class, 'store'])->name('invitations.love-story.store');
+    Route::put('invitations/{invitation}/love-story/{timeline}', [\App\Http\Controllers\LoveStoryTimelineController::class, 'update'])->name('invitations.love-story.update');
+    Route::delete('invitations/{invitation}/love-story/{timeline}', [\App\Http\Controllers\LoveStoryTimelineController::class, 'destroy'])->name('invitations.love-story.destroy');
+    Route::post('invitations/{invitation}/love-story/update-order', [\App\Http\Controllers\LoveStoryTimelineController::class, 'updateOrder'])->name('invitations.love-story.update-order');
+    Route::post('invitations/{invitation}/love-story/switch-mode', [\App\Http\Controllers\LoveStoryTimelineController::class, 'switchMode'])->name('invitations.love-story.switch-mode');
     
     // Old Gallery Routes (Keep for backward compatibility)
     Route::get('invitations/{invitation}/gallery/buy-slots', [GalleryController::class, 'buySlots'])->name('invitations.gallery.buy-slots');
@@ -285,3 +290,8 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::get('admin/funnel-report', [\App\Http\Controllers\Admin\FunnelReportController::class, 'index'])
         ->name('admin.funnel-report');
 });
+
+// Halaman publik undangan (tanpa auth) - MUST BE LAST (catch-all route)
+Route::get('/{slug}', [InvitationController::class, 'show'])->name('invitation.show');
+Route::post('/{slug}/guest-message', [App\Http\Controllers\GuestMessageController::class, 'store'])->name('invitation.guest-message.store');
+Route::post('/{slug}/guest-message/{message}/like', [App\Http\Controllers\GuestMessageController::class, 'like'])->name('invitation.guest-message.like');

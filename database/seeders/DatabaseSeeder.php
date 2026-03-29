@@ -157,7 +157,7 @@ class DatabaseSeeder extends Seeder
 
     $this->call([
         // BASIC
-        GeneralConfigSeeder::class,
+        CurrentGeneralConfigSeeder::class,
         UserRoleSeeder::class,
 
         // TEMPLATE
@@ -186,7 +186,7 @@ class DatabaseSeeder extends Seeder
 
         // CORE DATA
         MusicSeeder::class,
-        InvitationSeeder::class,
+        DemoInvitationSeeder::class, // Updated seeder name
         PartnerSeeder::class,
     ]);
         // $this->call(PaymentGatewayConfigSeeder::class); // Skip - requires manual configuration
