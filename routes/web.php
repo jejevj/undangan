@@ -247,4 +247,8 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     Route::put('general-config', [GeneralConfigController::class, 'update'])
         ->name('general-config.update')
         ->middleware('can:edit-general-config');
+
+    // Funnel Analysis (Admin only)
+    Route::get('admin/funnel-report', [\App\Http\Controllers\Admin\FunnelReportController::class, 'index'])
+        ->name('admin.funnel-report');
 });

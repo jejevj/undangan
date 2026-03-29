@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\PricingPlan;
 use App\Models\UserSubscription;
+use App\Services\EventTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,11 +16,17 @@ class RegisterController extends Controller
 {
     public function showRegistrationForm()
     {
+        // Track registration page view
+        EventTrackingService::track('view_register', 'registration_funnel', 'View Registration Form');
+        
         return view('auth.login'); // Same view with tabs
     }
 
     public function register(Request $request)
     {
+        // Track registration attempt
+        EventTrackingService::track('submit_register', 'registration_funnel', 'Submit Registration Form');
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -55,6 +62,12 @@ class RegisterController extends Controller
 
         // Login user automatically
         Auth::login($user);
+
+        // Track successful registration
+        EventTrackingService::track('register_success', 'registration_funnel', 'Registration Successful', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+        ]);
 
         return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang di ' . config('app.name'));
     }

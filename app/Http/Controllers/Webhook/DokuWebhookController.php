@@ -7,6 +7,7 @@ use App\Models\DokuVirtualAccount;
 use App\Models\DokuEWalletPayment;
 use App\Models\UserSubscription;
 use App\Models\PaymentGatewayConfig;
+use App\Services\EventTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -344,6 +345,15 @@ class DokuWebhookController extends Controller
             'expires_at' => now()->addDays(30), // Default 30 days, adjust based on plan if needed
             'paid_at' => now(),
             'payment_method' => 'doku_va',
+        ]);
+
+        // Track payment completion in funnel
+        EventTrackingService::subscriptionFunnel('payment_completed', [
+            'order_id' => $order->id,
+            'plan_id' => $order->pricing_plan_id,
+            'plan_name' => $plan->name ?? 'Unknown',
+            'amount' => $order->amount,
+            'payment_method' => get_class($payment),
         ]);
 
         Log::channel('va')->info('Subscription activated via webhook', [

@@ -6,12 +6,16 @@ use App\Models\Template;
 use App\Models\PricingPlan;
 use App\Models\TemplateCategory;
 use App\Models\Partner;
+use App\Services\EventTrackingService;
 use Illuminate\Http\Request;
 
 class LandingController extends Controller
 {
     public function index()
     {
+        // Track landing page view (for anonymous users too)
+        EventTrackingService::pageView('Landing Page');
+        
         $categories = TemplateCategory::where('is_active', true)
             ->orderBy('order')
             ->get();
@@ -35,6 +39,12 @@ class LandingController extends Controller
     {
         $categoryFilter = $request->get('category', 'all');
         $typeFilter = $request->get('type', 'all');
+        
+        // Track template browsing
+        EventTrackingService::track('browse_templates', 'landing', 'Browse Templates', [
+            'category' => $categoryFilter,
+            'type' => $typeFilter,
+        ]);
         
         // Build query for templates
         $query = Template::with('category')->where('is_active', true);

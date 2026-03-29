@@ -8,12 +8,16 @@ use App\Models\DokuVirtualAccount;
 use App\Models\DokuEWalletPayment;
 use App\Services\DokuVirtualAccountService;
 use App\Services\DokuEWalletService;
+use App\Services\EventTrackingService;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
 {
     public function index()
     {
+        // Track funnel event
+        EventTrackingService::subscriptionFunnel('view_plans');
+
         // Hanya tampilkan paket public (sembunyikan business)
         $plans       = PricingPlan::publicPlans()->where('is_active', true)->orderBy('price')->get();
         $activePlan  = auth()->user()->activePlan();
@@ -24,6 +28,10 @@ class SubscriptionController extends Controller
 
     public function checkout(PricingPlan $plan)
     {
+        // Track funnel events
+        EventTrackingService::subscriptionFunnel('select_plan', ['plan_id' => $plan->id, 'plan_name' => $plan->name]);
+        EventTrackingService::subscriptionFunnel('view_checkout', ['plan_id' => $plan->id, 'plan_name' => $plan->name]);
+
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
@@ -178,6 +186,13 @@ class SubscriptionController extends Controller
                 $user->update(['phone' => $validated['phone']]);
             }
 
+            // Track funnel event
+            EventTrackingService::subscriptionFunnel('select_payment', [
+                'method' => 'virtual_account',
+                'channel' => $validated['channel'],
+                'order_id' => $order->id,
+            ]);
+
             // Buat Virtual Account
             $vaService = new DokuVirtualAccountService();
             $virtualAccount = $vaService->createVirtualAccount(
@@ -191,6 +206,14 @@ class SubscriptionController extends Controller
                     'expired_hours' => 24,
                 ]
             );
+
+            // Track payment initiated
+            EventTrackingService::subscriptionFunnel('payment_initiated', [
+                'method' => 'virtual_account',
+                'channel' => $validated['channel'],
+                'order_id' => $order->id,
+                'amount' => $order->amount,
+            ]);
 
             \Log::info('VA created successfully', [
                 'order_id' => $order->id,
@@ -291,6 +314,13 @@ class SubscriptionController extends Controller
                 $user->update(['phone' => $validated['phone']]);
             }
 
+            // Track funnel event
+            EventTrackingService::subscriptionFunnel('select_payment', [
+                'method' => 'ewallet',
+                'channel' => $validated['channel'],
+                'order_id' => $order->id,
+            ]);
+
             // Buat E-Wallet Payment
             $ewalletService = new DokuEWalletService();
             $payment = $ewalletService->createPayment(
@@ -305,6 +335,14 @@ class SubscriptionController extends Controller
                     'expired_minutes' => 30,
                 ]
             );
+
+            // Track payment initiated
+            EventTrackingService::subscriptionFunnel('payment_initiated', [
+                'method' => 'ewallet',
+                'channel' => $validated['channel'],
+                'order_id' => $order->id,
+                'amount' => $order->amount,
+            ]);
 
             \Log::info('E-Wallet payment created successfully', [
                 'order_id' => $order->id,
@@ -451,6 +489,12 @@ class SubscriptionController extends Controller
                 $user->update(['phone' => $validated['phone']]);
             }
 
+            // Track funnel event
+            EventTrackingService::subscriptionFunnel('select_payment', [
+                'method' => 'qris',
+                'order_id' => $order->id,
+            ]);
+
             // Buat QRIS Payment
             $qrisService = new \App\Services\DokuQrisService();
             $result = $qrisService->generateQris($user, [
@@ -462,6 +506,13 @@ class SubscriptionController extends Controller
             ]);
 
             if ($result['success']) {
+                // Track payment initiated
+                EventTrackingService::subscriptionFunnel('payment_initiated', [
+                    'method' => 'qris',
+                    'order_id' => $order->id,
+                    'amount' => $order->amount,
+                ]);
+
                 \Log::info('QRIS payment created successfully', [
                     'order_id' => $order->id,
                     'qris_id' => $result['qris']->id,
