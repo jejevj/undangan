@@ -77,6 +77,9 @@ class PremiumWhite1PreviewSeeder extends Seeder
             // Tambahan
             'maps_url' => 'https://maps.google.com/?q=-6.2088,106.8456',
             'love_story' => 'Kami bertemu pertama kali di kampus pada tahun 2020. Dari pertemanan biasa, berkembang menjadi hubungan yang serius. Setelah 4 tahun bersama, kami memutuskan untuk melanjutkan ke jenjang pernikahan.',
+            'music_url' => 'invitation-assets/music/a-thousand-years.mp3',
+            'music_title' => 'A Thousand Years',
+            'music_artist' => 'Christina Perri',
         ];
 
         // Save data to invitation_data table

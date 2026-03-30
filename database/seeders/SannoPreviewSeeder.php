@@ -59,6 +59,9 @@ class SannoPreviewSeeder extends Seeder
             'rsvp_note' => 'Setiap instansi maksimal 2 orang perwakilan. Mohon konfirmasi kehadiran Anda untuk membantu kami mempersiapkan acara dengan lebih baik.',
             'qr_note' => 'Jangan lupa mengisi konfirmasi kehadiran untuk mendapatkan QR Code. Gunakan QR-Code untuk melakukan check-in dan penukaran souvenir.',
             'cover_photo' => null,
+            'music_url' => 'invitation-assets/music/thinking-out-loud.mp3',
+            'music_title' => 'Thinking Out Loud',
+            'music_artist' => 'Ed Sheeran',
         ];
 
         // Save data to invitation_data table

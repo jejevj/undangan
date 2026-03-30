@@ -78,9 +78,9 @@ class BasicPreviewSeeder extends Seeder
             'maps_url' => 'https://maps.google.com/?q=-6.2088,106.8456',
             'love_story' => 'Kami bertemu pertama kali di kampus pada tahun 2020. Dari pertemanan biasa, berkembang menjadi hubungan yang serius. Setelah 4 tahun bersama, kami memutuskan untuk melanjutkan ke jenjang pernikahan.',
             'cover_photo' => null,
-            'music_url' => null,
-            'music_title' => null,
-            'music_artist' => null,
+            'music_url' => 'invitation-assets/music/perfect-ed-sheeran.mp3',
+            'music_title' => 'Perfect',
+            'music_artist' => 'Ed Sheeran',
         ];
 
         // Save data to invitation_data table
