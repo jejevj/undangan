@@ -42,6 +42,11 @@ class UserGalleryPhoto extends Model
      */
     public function getUrlAttribute()
     {
+        // Check if path is external URL
+        if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
+            return $this->path;
+        }
+        
         return Storage::url($this->path);
     }
 

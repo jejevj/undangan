@@ -69,7 +69,11 @@
         <div class="couple-card">
             <?php if(!empty($data['groom_photo'])): ?>
                 <div data-editable data-field-key="groom_photo" data-field-type="image" data-field-label="Foto Mempelai Pria">
-                    <img src="<?php echo e(asset('storage/' . $data['groom_photo'])); ?>" class="couple-photo" alt="">
+                    <?php if(str_starts_with($data['groom_photo'], 'http')): ?>
+                        <img src="<?php echo e($data['groom_photo']); ?>" class="couple-photo" alt="">
+                    <?php else: ?>
+                        <img src="<?php echo e(asset('storage/' . $data['groom_photo'])); ?>" class="couple-photo" alt="">
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="couple-photo-placeholder">♂</div>
@@ -86,7 +90,11 @@
         <div class="couple-card">
             <?php if(!empty($data['bride_photo'])): ?>
                 <div data-editable data-field-key="bride_photo" data-field-type="image" data-field-label="Foto Mempelai Wanita">
-                    <img src="<?php echo e(asset('storage/' . $data['bride_photo'])); ?>" class="couple-photo" alt="">
+                    <?php if(str_starts_with($data['bride_photo'], 'http')): ?>
+                        <img src="<?php echo e($data['bride_photo']); ?>" class="couple-photo" alt="">
+                    <?php else: ?>
+                        <img src="<?php echo e(asset('storage/' . $data['bride_photo'])); ?>" class="couple-photo" alt="">
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="couple-photo-placeholder">♀</div>
@@ -239,6 +247,9 @@
 </button>
 <audio id="bgMusic" src="<?php echo e($musicUrl); ?>" loop preload="auto"></audio>
 <?php endif; ?>
+
+
+<?php echo $__env->make('invitation-templates._cta_preview', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 
 <nav class="bottom-navbar" role="navigation" aria-label="Navigasi undangan">

@@ -163,10 +163,11 @@ class DatabaseSeeder extends Seeder
         // TEMPLATE
         TemplateCategorySeeder::class,
         BasicTemplateSeeder::class,
+        BasicPreviewSeeder::class,
         SannoTemplateSeeder::class,
         SannoPreviewSeeder::class,
+        PremiumWhite1PreviewSeeder::class,
         TemplatePreviewInvitationSeeder::class,
-        UpdateTemplatePreviewSeeder::class,
 
         // PRICING
         PricingPlanSeeder::class,
@@ -183,6 +184,8 @@ class DatabaseSeeder extends Seeder
         PaymentGatewayPermissionSeeder::class,
         PaymentGatewayMenuSeeder::class,
         FunnelReportMenuSeeder::class,
+        CampaignPermissionSeeder::class,
+        CampaignMenuSeeder::class,
 
         // CORE DATA
         MusicSeeder::class,

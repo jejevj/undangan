@@ -310,6 +310,9 @@
 <audio id="bgMusic" src="{{ $musicUrl }}" loop preload="auto"></audio>
 @endif
 
+{{-- ── CTA PREVIEW ───────────────────────────────────────────────── --}}
+@include('invitation-templates._cta_preview')
+
 {{-- ── BOTTOM NAVBAR ─────────────────────────────────────────────── --}}
 <nav class="bottom-navbar" role="navigation">
     <a href="#hero" class="nav-item active" data-section="hero" aria-label="Home">

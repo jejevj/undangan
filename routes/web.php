@@ -289,6 +289,18 @@ Route::prefix('dash')->middleware('auth')->group(function () {
     // Funnel Analysis (Admin only)
     Route::get('admin/funnel-report', [\App\Http\Controllers\Admin\FunnelReportController::class, 'index'])
         ->name('admin.funnel-report');
+
+    // Campaign Management (Admin only)
+    Route::prefix('admin/campaigns')->name('admin.campaigns.')->middleware('can:campaigns.view')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CampaignController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\CampaignController::class, 'create'])->name('create')->middleware('can:campaigns.create');
+        Route::post('/', [\App\Http\Controllers\Admin\CampaignController::class, 'store'])->name('store')->middleware('can:campaigns.create');
+        Route::get('/{campaign}', [\App\Http\Controllers\Admin\CampaignController::class, 'show'])->name('show');
+        Route::get('/{campaign}/edit', [\App\Http\Controllers\Admin\CampaignController::class, 'edit'])->name('edit')->middleware('can:campaigns.edit');
+        Route::put('/{campaign}', [\App\Http\Controllers\Admin\CampaignController::class, 'update'])->name('update')->middleware('can:campaigns.edit');
+        Route::delete('/{campaign}', [\App\Http\Controllers\Admin\CampaignController::class, 'destroy'])->name('destroy')->middleware('can:campaigns.delete');
+        Route::patch('/{campaign}/toggle-status', [\App\Http\Controllers\Admin\CampaignController::class, 'toggleStatus'])->name('toggle-status')->middleware('can:campaigns.edit');
+    });
 });
 
 // Halaman publik undangan (tanpa auth) - MUST BE LAST (catch-all route)

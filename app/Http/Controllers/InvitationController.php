@@ -142,13 +142,34 @@ class InvitationController extends Controller
 
         $template = $invitation->template()->with('fields')->first();
 
+        // Build validation rules
         $rules = [];
-        foreach ($template->fields->where('required', true) as $field) {
-            $rules['fields.' . $field->key] = 'required';
+        foreach ($template->fields as $field) {
+            if ($field->required) {
+                // For image fields, only require if no existing value
+                if ($field->type === 'image') {
+                    $existingValue = $invitation->getValue($field->key);
+                    if (!$existingValue) {
+                        $rules['fields.' . $field->key] = 'required|image|max:2048';
+                    } else {
+                        $rules['fields.' . $field->key] = 'nullable|image|max:2048';
+                    }
+                } else {
+                    $rules['fields.' . $field->key] = 'required';
+                }
+            } else if ($field->type === 'image') {
+                // Optional image fields
+                $rules['fields.' . $field->key] = 'nullable|image|max:2048';
+            }
         }
+        
         if ($rules) $request->validate($rules);
 
-        $invitation->update(['title' => $request->title, 'greeting' => $request->greeting, 'gallery_display' => $request->gallery_display ?? 'grid']);
+        $invitation->update([
+            'title' => $request->title,
+            'greeting' => $request->greeting,
+            'gallery_display' => $request->gallery_display ?? 'grid'
+        ]);
 
         $this->saveInvitationData($invitation, $template, $request->input('fields', []));
 
@@ -323,6 +344,24 @@ class InvitationController extends Controller
     {
         foreach ($template->fields as $field) {
             $value = $fields[$field->key] ?? null;
+
+            // Handle file upload for image type fields
+            if ($field->type === 'image' && request()->hasFile('fields.' . $field->key)) {
+                $file = request()->file('fields.' . $field->key);
+                
+                // Delete old file if exists
+                $oldData = InvitationData::where('invitation_id', $invitation->id)
+                    ->where('template_field_id', $field->id)
+                    ->first();
+                    
+                if ($oldData && $oldData->value) {
+                    \Storage::disk('public')->delete($oldData->value);
+                }
+                
+                // Store new file
+                $path = $file->store('invitations/' . $invitation->id, 'public');
+                $value = $path;
+            }
 
             InvitationData::updateOrCreate(
                 [

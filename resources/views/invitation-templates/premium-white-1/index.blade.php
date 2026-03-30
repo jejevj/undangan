@@ -72,7 +72,11 @@
         <div class="couple-card">
             @if(!empty($data['groom_photo']))
                 <div data-editable data-field-key="groom_photo" data-field-type="image" data-field-label="Foto Mempelai Pria">
-                    <img src="{{ asset('storage/' . $data['groom_photo']) }}" class="couple-photo" alt="">
+                    @if(str_starts_with($data['groom_photo'], 'http'))
+                        <img src="{{ $data['groom_photo'] }}" class="couple-photo" alt="">
+                    @else
+                        <img src="{{ asset('storage/' . $data['groom_photo']) }}" class="couple-photo" alt="">
+                    @endif
                 </div>
             @else
                 <div class="couple-photo-placeholder">♂</div>
@@ -89,7 +93,11 @@
         <div class="couple-card">
             @if(!empty($data['bride_photo']))
                 <div data-editable data-field-key="bride_photo" data-field-type="image" data-field-label="Foto Mempelai Wanita">
-                    <img src="{{ asset('storage/' . $data['bride_photo']) }}" class="couple-photo" alt="">
+                    @if(str_starts_with($data['bride_photo'], 'http'))
+                        <img src="{{ $data['bride_photo'] }}" class="couple-photo" alt="">
+                    @else
+                        <img src="{{ asset('storage/' . $data['bride_photo']) }}" class="couple-photo" alt="">
+                    @endif
                 </div>
             @else
                 <div class="couple-photo-placeholder">♀</div>
@@ -255,6 +263,11 @@
 </button>
 <audio id="bgMusic" src="{{ $musicUrl }}" loop preload="auto"></audio>
 @endif
+
+{{-- ══════════════════════════════════════════════════════════════════
+     CTA PREVIEW
+     ══════════════════════════════════════════════════════════════════ --}}
+@include('invitation-templates._cta_preview')
 
 {{-- ══════════════════════════════════════════════════════════════════
      BOTTOM NAVBAR — floating, tidak full width

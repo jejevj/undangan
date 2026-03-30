@@ -37,6 +37,8 @@ class SannoPreviewSeeder extends Seeder
             ],
             [
                 'title' => 'Grand Opening - Tempered Glass Factory',
+                'status' => 'published',
+                'published_at' => now(),
                 'is_published' => true,
                 'gallery_display' => 'grid',
                 'gift_enabled' => false,
@@ -75,8 +77,37 @@ class SannoPreviewSeeder extends Seeder
             }
         }
 
-        // Update template with preview URL
-        $previewUrl = route('invitation.show', ['slug' => $invitation->slug]);
+        // Gallery Photos (using external URLs)
+        // Only delete photos linked to this specific invitation
+        \App\Models\InvitationGallery::where('invitation_id', $invitation->id)->delete();
+        
+        $galleryPhotos = [
+            'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
+            'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&q=80',
+            'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80',
+            'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',
+            'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80',
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',
+        ];
+
+        foreach ($galleryPhotos as $index => $photoUrl) {
+            // Create user gallery photo
+            $userPhoto = \App\Models\UserGalleryPhoto::create([
+                'user_id' => $previewUser->id,
+                'path' => $photoUrl, // Store URL directly
+                'caption' => 'Preview Photo ' . ($index + 1),
+            ]);
+
+            // Link to invitation
+            \App\Models\InvitationGallery::create([
+                'invitation_id' => $invitation->id,
+                'photo_id' => $userPhoto->id,
+                'order' => $index,
+            ]);
+        }
+
+        // Update template with preview URL (with demo user parameter)
+        $previewUrl = route('invitation.show', ['slug' => $invitation->slug]) . '?to=demo-user';
         $template->update(['preview_url' => $previewUrl]);
 
         $this->command->info("Preview invitation untuk template 'Sanno' berhasil dibuat!");

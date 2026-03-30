@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $fillable = ['name', 'email', 'phone', 'password'];
+    protected $fillable = ['name', 'email', 'phone', 'password', 'campaign_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -64,6 +64,14 @@ class User extends Authenticatable
     public function galleryPhotos(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(UserGalleryPhoto::class);
+    }
+
+    /**
+     * Campaign yang digunakan user saat registrasi
+     */
+    public function campaign(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Campaign::class);
     }
 
     /** Get or create gallery slots for user */
