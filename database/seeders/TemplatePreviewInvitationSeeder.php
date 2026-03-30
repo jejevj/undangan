@@ -28,8 +28,8 @@ class TemplatePreviewInvitationSeeder extends Seeder
                 continue;
             }
 
-            // Update template preview_url menggunakan route() helper
-            $previewUrl = route('invitation.show', $publishedInvitation->slug);
+            // Update template preview_url menggunakan route() helper (with demo user parameter)
+            $previewUrl = route('invitation.show', $publishedInvitation->slug) . '?to=demo-user';
             
             $template->update([
                 'preview_url' => $previewUrl
