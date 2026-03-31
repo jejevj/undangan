@@ -175,6 +175,12 @@ class BasicPreviewSeeder extends Seeder
         $previewUrl = route('invitation.show', ['slug' => $invitation->slug]) . '?to=demo-user';
         $template->update(['preview_url' => $previewUrl]);
 
+        // Generate thumbnail
+        \Artisan::call('templates:generate-thumbnails', [
+            '--template' => $template->slug,
+            '--force' => true,
+        ]);
+
         $this->command->info("Preview invitation untuk template 'Basic' berhasil dibuat!");
         $this->command->info("Preview URL: {$previewUrl}");
     }
