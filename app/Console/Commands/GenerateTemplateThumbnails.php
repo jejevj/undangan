@@ -69,9 +69,13 @@ class GenerateTemplateThumbnails extends Command
                 mkdir($thumbnailDir, 0755, true);
             }
 
-            // Remove ?to=demo-user parameter from URL to show actual cover page
-            $screenshotUrl = preg_replace('/\?to=[^&]*(&|$)/', '', $template->preview_url);
-            $screenshotUrl = rtrim($screenshotUrl, '?&');
+            // Add &open=1 parameter to auto-open invitation
+            $screenshotUrl = $template->preview_url;
+            if (strpos($screenshotUrl, '?') !== false) {
+                $screenshotUrl .= '&open=1';
+            } else {
+                $screenshotUrl .= '?open=1';
+            }
 
             $this->line("   🌐 URL: {$screenshotUrl}");
             $this->line("   ⏳ Generating screenshot...");
@@ -84,7 +88,7 @@ class GenerateTemplateThumbnails extends Command
                     ->waitUntilNetworkIdle()
                     ->dismissDialogs()
                     ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox'])
-                    ->setDelay(2000); // Wait for page to fully load and auto-click
+                    ->setDelay(3000); // Wait for page load and auto-open animation
 
                 $browsershot->save($fullPath);
                 
