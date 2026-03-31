@@ -246,6 +246,9 @@
 <?php endif; ?>
 
 
+<?php echo $__env->make('invitation-templates._cta_preview', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+
 <nav class="bottom-navbar" role="navigation">
     <a href="#hero" class="nav-item active" data-section="hero" aria-label="Beranda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

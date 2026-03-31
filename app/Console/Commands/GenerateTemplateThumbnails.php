@@ -73,13 +73,15 @@ class GenerateTemplateThumbnails extends Command
             $this->line("   ⏳ Generating screenshot...");
 
             // Generate screenshot using Browsershot
-            Browsershot::url($template->preview_url)
+            $browsershot = \Spatie\Browsershot\Browsershot::url($template->preview_url)
                 ->windowSize(1200, 800)
                 ->setScreenshotType('jpeg', 85)
                 ->waitUntilNetworkIdle()
                 ->dismissDialogs()
                 ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox'])
-                ->save($fullPath);
+                ->setDelay(2000); // Wait for page to fully load
+
+            $browsershot->save($fullPath);
 
             $template->update(['thumbnail' => $filename]);
             
