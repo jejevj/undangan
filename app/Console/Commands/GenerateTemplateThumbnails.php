@@ -69,29 +69,35 @@ class GenerateTemplateThumbnails extends Command
                 mkdir($thumbnailDir, 0755, true);
             }
 
-            $this->line("   🌐 URL: {$template->preview_url}");
+            // Remove ?to=demo-user parameter from URL to show actual cover page
+            $screenshotUrl = preg_replace('/\?to=[^&]*(&|$)/', '', $template->preview_url);
+            $screenshotUrl = rtrim($screenshotUrl, '?&');
+
+            $this->line("   🌐 URL: {$screenshotUrl}");
             $this->line("   ⏳ Generating screenshot...");
 
-            // Generate screenshot using Browsershot
-            $browsershot = \Spatie\Browsershot\Browsershot::url($template->preview_url)
-                ->windowSize(1200, 800)
-                ->setScreenshotType('jpeg', 85)
-                ->waitUntilNetworkIdle()
-                ->dismissDialogs()
-                ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox'])
-                ->setDelay(2000); // Wait for page to fully load
+            try {
+                // Generate screenshot using Browsershot
+                $browsershot = \Spatie\Browsershot\Browsershot::url($screenshotUrl)
+                    ->windowSize(1200, 800)
+                    ->setScreenshotType('jpeg', 85)
+                    ->waitUntilNetworkIdle()
+                    ->dismissDialogs()
+                    ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox'])
+                    ->setDelay(2000); // Wait for page to fully load and auto-click
 
-            $browsershot->save($fullPath);
-
-            $template->update(['thumbnail' => $filename]);
-            
-            $fileSize = round(filesize($fullPath) / 1024, 2);
-            $this->info("   ✅ Thumbnail saved: {$filename} ({$fileSize} KB)");
-            
+                $browsershot->save($fullPath);
+                
+                $fileSize = round(filesize($fullPath) / 1024, 2);
+                $this->info("   ✅ Thumbnail saved: {$filename} ({$fileSize} KB)");
+                
+                $template->update(['thumbnail' => $filename]);
+                
+            } catch (\Exception $e) {
+                $this->error("   ❌ Error: " . $e->getMessage());
+            }
         } catch (\Exception $e) {
             $this->error("   ❌ Error: " . $e->getMessage());
-            $this->line("   💡 Make sure Node.js and Puppeteer are installed:");
-            $this->line("      npm install puppeteer");
         }
     }
 }
