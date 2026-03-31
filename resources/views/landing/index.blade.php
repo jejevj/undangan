@@ -254,7 +254,7 @@
      }
      
      body.light .template-name {
-       color: #000;
+       color: #1a1a1a;
      }
      
      .template-price {
@@ -265,6 +265,28 @@
      .template-price .badge {
        font-size: 11px;
        padding: 4px 10px;
+       font-weight: 600;
+     }
+     
+     /* Badge styling for better contrast */
+     .template-price .badge-success {
+       background-color: #28a745 !important;
+       color: white !important;
+     }
+     
+     .template-price .badge-warning {
+       background-color: #ffc107 !important;
+       color: #1a1a1a !important;
+     }
+     
+     body.dark .template-price .badge-warning {
+       background-color: #ffc107 !important;
+       color: #1a1a1a !important;
+     }
+     
+     body.light .template-price .badge-warning {
+       background-color: #ff9800 !important;
+       color: white !important;
      }
      
      .template-actions {
