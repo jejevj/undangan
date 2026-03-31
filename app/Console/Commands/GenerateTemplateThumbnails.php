@@ -99,6 +99,16 @@ class GenerateTemplateThumbnails extends Command
                 
             } catch (\Exception $e) {
                 $this->error("   ❌ Error: " . $e->getMessage());
+                $this->newLine();
+                $this->warn("   💡 Troubleshooting:");
+                $this->line("   1. Make sure Node.js is installed: node --version");
+                $this->line("   2. Install Puppeteer: npm install puppeteer");
+                $this->line("   3. On Linux, install Chrome dependencies:");
+                $this->line("      apt-get install -y chromium-browser");
+                $this->line("      apt-get install -y libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1");
+                $this->line("      apt-get install -y libxi6 libxtst6 libnss3 libcups2 libxss1 libxrandr2");
+                $this->line("      apt-get install -y libasound2 libpangocairo-1.0-0 libatk1.0-0 libatk-bridge2.0-0");
+                $this->line("      apt-get install -y libgtk-3-0 libgbm1");
             }
         } catch (\Exception $e) {
             $this->error("   ❌ Error: " . $e->getMessage());
